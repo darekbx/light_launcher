@@ -8,6 +8,6 @@ import androidx.room.PrimaryKey
 class ApplicationDto(
     @PrimaryKey(autoGenerate = true) var id: Long? = null,
     @ColumnInfo(name = "package_name") var packageName: String = "",
-    @ColumnInfo(name = "order") var order: Int = 0,
+    @ColumnInfo(name = "order") var order: Int = -1,
     @ColumnInfo(name = "click_count") var clickCount: Int = 0
 )

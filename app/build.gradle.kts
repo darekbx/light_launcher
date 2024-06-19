@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kspAndroid)
     alias(libs.plugins.gitVersionGradle)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -63,6 +64,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    implementation(libs.compose.reordeable)
 
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)

@@ -7,6 +7,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.darekbx.lightlauncher.ui.settings.ApplicationSettingsScreen
 import com.darekbx.lightlauncher.ui.settings.SettingsScreen
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsScreen
 
@@ -22,17 +23,19 @@ fun AppNavHost(
     ) {
         composable(route = UserApplicationsDestination.route) {
             UserApplicationsScreen {
-                navController.navigateSingleTopTo(SettingsDestination.route)
+                navController.navigate(SettingsDestination.route)
             }
         }
 
         composable(route = SettingsDestination.route) {
             SettingsScreen(
-                openApplications = {
-                    navController.navigateSingleTopTo(SettingsApplicationsDestination.route)
-                },
+                openApplications = { navController.navigate(SettingsApplicationsDestination.route) },
                 openStatistics = {}
             )
+        }
+
+        composable(route = SettingsApplicationsDestination.route) {
+            ApplicationSettingsScreen()
         }
     }
 }

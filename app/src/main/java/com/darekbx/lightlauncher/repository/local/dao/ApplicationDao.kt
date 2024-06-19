@@ -17,7 +17,7 @@ interface ApplicationDao {
      *
      * @return List of [ApplicationDto] objects.
      */
-    @Query("SELECT * FROM application")
+    @Query("SELECT * FROM application ORDER BY `order` ASC")
     suspend fun fetch(): List<ApplicationDto>
 
     /**
