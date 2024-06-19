@@ -23,7 +23,7 @@ import com.darekbx.lightlauncher.ui.theme.fontFamily
 
 @Composable
 fun SettingsScreen(
-    openApplications: () -> Unit = { },
+    openFavouriteApplications: () -> Unit = { },
     openStatistics: () -> Unit = { },
 ) {
     Column(
@@ -43,7 +43,7 @@ fun SettingsScreen(
         SettingsOption(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { openApplications() },
+                .clickable { openFavouriteApplications() },
             title = "favourite applications"
         )
         SettingsOption(

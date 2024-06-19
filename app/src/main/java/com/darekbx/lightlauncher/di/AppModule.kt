@@ -8,7 +8,7 @@ import com.darekbx.lightlauncher.system.ApplicationsProvider
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
 import com.darekbx.lightlauncher.system.PackageManagerWrapper
-import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
+import com.darekbx.lightlauncher.ui.settings.favourites.FavouritesViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -28,5 +28,5 @@ val appModule = module {
 }
 
 val viewModelModule = module {
-     viewModel { SettingsViewModel(get<BaseApplicationsProvider>(), get()) }
+     viewModel { FavouritesViewModel(get<BaseApplicationsProvider>(), get()) }
 }

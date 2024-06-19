@@ -2,11 +2,15 @@ package com.darekbx.lightlauncher
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.rememberNavController
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
 import com.darekbx.shoppinglist.navigation.AppNavHost
@@ -29,7 +33,6 @@ import com.darekbx.shoppinglist.navigation.AppNavHost
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             LightLauncherTheme {
                 val navController = rememberNavController()
@@ -43,7 +46,24 @@ class MainActivity : ComponentActivity() {
                     },
                     bottomBar = { /*BottomNavigation(navController)*/ }
                 )
+                SetNavigationBarColor()
             }
         }
     }
+
+    @Composable
+    fun SetNavigationBarColor() {
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                MaterialTheme.colorScheme.background.toArgb(),
+                MaterialTheme.colorScheme.background.toArgb(),
+            ),
+            navigationBarStyle = SystemBarStyle.auto(
+                MaterialTheme.colorScheme.background.toArgb(),
+                MaterialTheme.colorScheme.background.toArgb(),
+                detectDarkMode = {true}
+            )
+        )
+    }
 }
+

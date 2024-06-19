@@ -10,7 +10,7 @@ import com.darekbx.lightlauncher.R
 
 private val ColorScheme = darkColorScheme(
     background = Color(40, 40, 40, 255),
-    onBackground = Color.White.copy(alpha = 0.55f),
+    onBackground = Color.White.copy(alpha = 0.7f),
 )
 
 val fontFamily = FontFamily(Font(R.font.alliance_font))
