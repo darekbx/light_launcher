@@ -41,8 +41,7 @@ class OrderViewModel(
                     ApplicationOrder(
                         packageName = app.packageName,
                         label = app.label,
-                        order = app?.order,
-                        localId = app?.id
+                        order = app?.order
                     )
                 }
                 _uiState.value = OrderedUiState.Done(favouriteApplication)

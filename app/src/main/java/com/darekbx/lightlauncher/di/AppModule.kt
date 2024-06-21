@@ -49,7 +49,7 @@ val viewModelModule = module {
     viewModel {
         UserApplicationsViewModel(
             get(),
-            get(named("io_dispatcher"))
+            get(),
         )
     }
 }

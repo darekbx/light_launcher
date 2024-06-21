@@ -4,6 +4,7 @@ import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.model.Application
+import com.darekbx.lightlauncher.system.model.FavouriteApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -12,6 +13,7 @@ import io.mockk.slot
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -20,6 +22,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FavouritesViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -51,10 +54,10 @@ class FavouritesViewModelTest {
         coEvery { applicationDao.fetch() } returns emptyList()
 
         val slot = slot<ApplicationDto>()
-        coEvery { applicationDao.add(capture(slot)) } answers { true }
+        coEvery { applicationDao.add(capture(slot)) } answers { }
 
         // when
-        viewModel.setFavourite(packageName, true)
+        viewModel.setFavourite(FavouriteApplication(packageName, "label", true), true)
 
         // then
         assertEquals(packageName, slot.captured.packageName)
@@ -69,18 +72,18 @@ class FavouritesViewModelTest {
         coEvery { applicationDao.delete(any()) } returns Unit
 
         // when
-        viewModel.setFavourite(packageName, false)
+        viewModel.setFavourite(FavouriteApplication(packageName, "label", true), false)
 
         // then
         coVerify { applicationDao.delete(packageName) }
     }
 
     @Test
-    fun `loadFavouriteApplications updates uiState to Done`() = runTest {
+    fun `loadFavouriteApplications fetches mapped item`() = runTest {
         // given
         coEvery { applicationsProvider.listInstalledApplications() } returns listOf(
-            Application("com.test.app1", "Test app1", mockk()),
-            Application("com.test.app2", "Test app2", mockk())
+            Application("com.test.app1", "Test app1"),
+            Application("com.test.app2", "Test app2")
         )
         coEvery { applicationDao.fetch() } returns listOf(
             ApplicationDto(1L, "com.test.app1"),

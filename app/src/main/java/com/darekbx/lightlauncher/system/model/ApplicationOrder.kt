@@ -7,6 +7,5 @@ import kotlinx.android.parcel.Parcelize
 data class ApplicationOrder(
     val packageName: String,
     val label: String,
-    val order: Int?,
-    val localId: Long?
+    val order: Int?
 ) : Parcelable

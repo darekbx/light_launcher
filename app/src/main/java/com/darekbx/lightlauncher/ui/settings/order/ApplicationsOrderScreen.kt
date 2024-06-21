@@ -130,9 +130,9 @@ fun ApplicationsListPreview() {
     LightLauncherTheme {
         ApplicationsOrderList(
             listOf(
-                ApplicationOrder("", "Google Maps", 1, null),
-                ApplicationOrder("", "Phone", 2, null),
-                ApplicationOrder("", "Messages", 2, null)
+                ApplicationOrder("", "Google Maps", null),
+                ApplicationOrder("", "Phone", null),
+                ApplicationOrder("", "Messages", null)
             )
         )
     }
