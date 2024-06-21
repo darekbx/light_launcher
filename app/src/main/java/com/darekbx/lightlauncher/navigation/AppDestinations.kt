@@ -12,6 +12,10 @@ object FavouriteApplicationsDestination : AppDestinations {
     override val route = "favourite_applications"
 }
 
+object ApplicationsOrderDestination : AppDestinations {
+    override val route = "applications_order"
+}
+
 object UserApplicationsDestination : AppDestinations {
     override val route = "user_applications"
 }

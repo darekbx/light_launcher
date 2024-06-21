@@ -16,6 +16,7 @@ junitKtx = "1.1.5"
 coreKtxVersion = "1.5.0"
 composeNavigation = "2.7.7"
 reordeable = "0.9.6"
+kotlinxCoroutinesTestVersion = "1.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +43,7 @@ androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.
 core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "coreKtxVersion" }
 androidx-compose-navigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 compose-reordeable = { group = "org.burnoutcrew.composereorderable", name = "reorderable", version.ref = "reordeable" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

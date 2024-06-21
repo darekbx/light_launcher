@@ -15,8 +15,7 @@ class ApplicationsProvider(
             .map {
                 Application(
                     getPackageName(it),
-                    packageManager.getApplicationLabel(it),
-                    packageManager.getApplicationIcon(it)
+                    packageManager.getApplicationLabel(it)
                 )
             }
     }

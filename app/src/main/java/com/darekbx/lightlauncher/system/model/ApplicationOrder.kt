@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-data class OrderedApplication(
+data class ApplicationOrder(
     val packageName: String,
     val label: String,
     val order: Int?,

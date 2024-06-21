@@ -39,7 +39,6 @@ class ApplicationsProviderTest {
         with(apps.first()) {
             assertEquals("Label", label)
             assertEquals("com.package.name", packageName)
-            assertEquals(drawable, icon)
         }
     }
 }

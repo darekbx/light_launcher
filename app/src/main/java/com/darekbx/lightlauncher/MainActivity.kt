@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                     content = { innerPadding ->
                         AppNavHost(
                             modifier = Modifier.padding(innerPadding),
-                            navController = navController
+                            controller = navController
                         )
                     },
                     bottomBar = { /*BottomNavigation(navController)*/ }
