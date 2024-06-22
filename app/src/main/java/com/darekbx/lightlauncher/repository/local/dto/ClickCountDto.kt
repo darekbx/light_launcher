@@ -4,10 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "application")
-class ApplicationDto(
+@Entity(tableName = "click_count")
+class ClickCountDto(
     @PrimaryKey(autoGenerate = true) var id: Long? = null,
     @ColumnInfo(name = "package_name") var packageName: String = "",
-    @ColumnInfo(name = "label") var label: String = "",
-    @ColumnInfo(name = "order") var order: Int = 0
+    @ColumnInfo(name = "count") var count: Int = 0
 )

@@ -5,7 +5,9 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
+import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
 import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
+import com.darekbx.lightlauncher.repository.local.dto.ClickCountDto
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -18,6 +20,7 @@ import java.io.IOException
 class ApplicationDatabaseTest {
 
     private lateinit var applicationDao: ApplicationDao
+    private lateinit var clickCountDao: ClickCountDao
     private lateinit var db: AppDatabase
 
     @Before
@@ -25,6 +28,7 @@ class ApplicationDatabaseTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
         applicationDao = db.applicationDao()
+        clickCountDao = db.clickCountDao()
     }
 
     @After
@@ -35,21 +39,17 @@ class ApplicationDatabaseTest {
 
     @Test
     @Throws(Exception::class)
-    fun `should add application and increase click_count twice`() = runBlocking {
+    fun `should add entry and increase click_count twice`() = runBlocking {
         // given
-        applicationDao.add(ApplicationDto(1L, "package.name"))
+        clickCountDao.add(ClickCountDto(1L, "package.name"))
 
         // when
-        applicationDao.increaseClicks("package.name")
-        applicationDao.increaseClicks("package.name")
+        clickCountDao.increaseClicks("package.name")
+        clickCountDao.increaseClicks("package.name")
 
         // then
-        val applications = applicationDao.fetch()
-        assertEquals(1, applications.size)
-        with(applications[0]) {
-            assertEquals("package.name", packageName)
-            assertEquals(2, clickCount)
-        }
+        val dto = clickCountDao.get("package.name")
+        assertEquals(2, dto?.count)
     }
 
     @Test

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.darekbx.lightlauncher.repository.local.AppDatabase
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
+import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
 import com.darekbx.lightlauncher.system.ApplicationsProvider
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
@@ -24,6 +25,7 @@ val databaseModule = module {
             .build()
     }
     single<ApplicationDao> { get<AppDatabase>().applicationDao() }
+    single<ClickCountDao> { get<AppDatabase>().clickCountDao() }
 }
 
 val appModule = module {
@@ -50,6 +52,9 @@ val viewModelModule = module {
         UserApplicationsViewModel(
             get(),
             get(),
+            get(),
+            get(named("io_dispatcher")),
+            androidContext()
         )
     }
 }

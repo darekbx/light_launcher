@@ -44,16 +44,4 @@ interface ApplicationDao {
      */
     @Query("UPDATE application SET `order` = :order WHERE package_name = :packageName")
     suspend fun setOrder(packageName: String, order: Int)
-
-    /**
-     * Increases the click count of an application in the `application` table.
-     *
-     * @param packageName The package name of the application to be updated.
-     */
-    @Query("""
-UPDATE application
-SET click_count = (SELECT click_count FROM application WHERE package_name = :packageName) + 1
-WHERE package_name = :packageName
-""")
-    suspend fun increaseClicks(packageName: String)
 }

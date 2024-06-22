@@ -16,7 +16,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -55,15 +54,20 @@ fun AllApplicationsList(
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
     onSettingsClick: () -> Unit = { }
 ) {
-    val applications by userApplicationsViewModel
-        .loadAllApplications()
-        .collectAsState(initial = emptyList())
+    val state by userApplicationsViewModel.uiState
 
-    if (applications.isEmpty()) {
+    LaunchedEffect(Unit) {
+        userApplicationsViewModel.loadAllApplications()
+        userApplicationsViewModel.listenForPackageChanges()
+    }
+
+    if (state is UserApplicationsUiState.Idle) {
         return Loading()
     }
 
+    val applications = (state as UserApplicationsUiState.Done).applications
     val context = LocalContext.current
+
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -76,6 +80,7 @@ fun AllApplicationsList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
+                            userApplicationsViewModel.increaseClickCount(item.packageName)
                             val intent = context
                                 .packageManager
                                 .getLaunchIntentForPackage(item.packageName)
@@ -132,6 +137,7 @@ fun UserApplicationsList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
+                            userApplicationsViewModel.increaseClickCount(item.packageName)
                             val intent = context
                                 .packageManager
                                 .getLaunchIntentForPackage(item.packageName)
