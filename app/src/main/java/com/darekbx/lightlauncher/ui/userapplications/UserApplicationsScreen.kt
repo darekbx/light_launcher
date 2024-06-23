@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,15 +26,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
+import com.darekbx.lightlauncher.R
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.theme.fontFamily
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -40,11 +46,26 @@ import org.koin.androidx.compose.koinViewModel
 fun UserApplicationsScreen(
     onSettingsClick: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
     HorizontalPager(modifier = Modifier.fillMaxSize(), state = pagerState) { page ->
         when (page) {
-            0 -> UserApplicationsList()
-            1 -> AllApplicationsList(onSettingsClick = onSettingsClick)
+            0 -> UserApplicationsList(
+                onArrowClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(1)
+                    }
+                }
+            )
+
+            1 -> AllApplicationsList(
+                onSettingsClick = onSettingsClick,
+                onArrowClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(0)
+                    }
+                }
+            )
         }
     }
 }
@@ -52,7 +73,8 @@ fun UserApplicationsScreen(
 @Composable
 fun AllApplicationsList(
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
-    onSettingsClick: () -> Unit = { }
+    onSettingsClick: () -> Unit = { },
+    onArrowClick: () -> Unit = { }
 ) {
     val state by userApplicationsViewModel.uiState
 
@@ -79,6 +101,7 @@ fun AllApplicationsList(
                 UserApplicationView(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(start = 48.dp, end = 48.dp)
                         .clickable {
                             userApplicationsViewModel.increaseClickCount(item.packageName)
                             val intent = context
@@ -91,22 +114,30 @@ fun AllApplicationsList(
             }
         }
 
-        Icon(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp),
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = "forward"
-        )
-
-        TextButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            onClick = { onSettingsClick() }) {
-            Text(
-                text = "Settings",
-                fontFamily = fontFamily
+        Column(
+            modifier = Modifier.align(Alignment.TopStart),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable { onArrowClick() },
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "forward"
+            )
+            Icon(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable { onSettingsClick() },
+                imageVector = Icons.Default.Settings,
+                contentDescription = "settings"
+            )
+            Icon(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable { onSettingsClick() },
+                painter = painterResource(id = R.drawable.ic_chart),
+                contentDescription = "settings"
             )
         }
     }
@@ -114,7 +145,8 @@ fun AllApplicationsList(
 
 @Composable
 fun UserApplicationsList(
-    userApplicationsViewModel: UserApplicationsViewModel = koinViewModel()
+    userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
+    onArrowClick: () -> Unit = { }
 ) {
     val applications by userApplicationsViewModel
         .loadApplications()
@@ -136,6 +168,7 @@ fun UserApplicationsList(
                 UserApplicationView(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(start = 48.dp, end = 48.dp)
                         .clickable {
                             userApplicationsViewModel.increaseClickCount(item.packageName)
                             val intent = context
@@ -151,7 +184,8 @@ fun UserApplicationsList(
         Icon(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(16.dp),
+                .padding(16.dp)
+                .clickable { onArrowClick() },
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = "forward"
         )
