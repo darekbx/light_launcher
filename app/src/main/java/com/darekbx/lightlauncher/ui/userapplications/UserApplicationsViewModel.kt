@@ -3,7 +3,6 @@ package com.darekbx.lightlauncher.ui.userapplications
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -28,15 +27,10 @@ class UserApplicationsViewModel(
     private val applicationsProvider: BaseApplicationsProvider,
     private val applicationDao: ApplicationDao,
     private val clickCountDao: ClickCountDao,
-    private val ioDispatcher: CoroutineDispatcher,
-    private val context: Context
+    private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    private val _uiState = mutableStateOf<UserApplicationsUiState>(UserApplicationsUiState.Idle)
-    val uiState: State<UserApplicationsUiState>
-        get() = _uiState
-
-    private val applicationsReceiver =  object : BroadcastReceiver() {
+    val applicationsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Intent.ACTION_PACKAGE_ADDED, Intent.ACTION_PACKAGE_REMOVED -> {
@@ -46,13 +40,9 @@ class UserApplicationsViewModel(
         }
     }
 
-    fun listenForPackageChanges() {
-        context.registerReceiver(applicationsReceiver, IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addDataScheme("package")
-        })
-    }
+    private val _uiState = mutableStateOf<UserApplicationsUiState>(UserApplicationsUiState.Idle)
+    val uiState: State<UserApplicationsUiState>
+        get() = _uiState
 
     fun increaseClickCount(packageName: String) {
         viewModelScope.launch {
@@ -101,10 +91,5 @@ class UserApplicationsViewModel(
             )
         }
         emit(applications)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        context.unregisterReceiver(applicationsReceiver)
     }
 }

@@ -53,8 +53,7 @@ val viewModelModule = module {
             get(),
             get(),
             get(),
-            get(named("io_dispatcher")),
-            androidContext()
+            get(named("io_dispatcher"))
         )
     }
 }

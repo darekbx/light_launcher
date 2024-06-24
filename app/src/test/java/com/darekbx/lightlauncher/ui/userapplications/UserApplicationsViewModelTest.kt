@@ -75,11 +75,12 @@ class UserApplicationsViewModelTest {
         )
 
         // when
-        val result = viewModel.loadAllApplications().last()
+        viewModel.loadAllApplications()
 
         // then
-        TestCase.assertEquals(1, result.size)
-        with(result[0]) {
+        val result = viewModel.uiState.value as UserApplicationsUiState.Done
+        TestCase.assertEquals(1, result.applications.size)
+        with(result.applications[0]) {
             TestCase.assertEquals("com.test.app2", packageName)
             TestCase.assertEquals("Test app2", label)
         }
