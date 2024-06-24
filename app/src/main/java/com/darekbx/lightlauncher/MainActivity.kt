@@ -1,5 +1,6 @@
 package com.darekbx.lightlauncher
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle

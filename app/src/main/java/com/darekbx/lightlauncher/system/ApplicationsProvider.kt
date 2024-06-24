@@ -14,8 +14,11 @@ class ApplicationsProvider(
             .queryIntentActivities(intent, flags = 0)
             .map {
                 Application(
+                    it.activityInfo.name,
                     getPackageName(it),
-                    packageManager.getApplicationLabel(it)
+                    packageManager.getApplicationLabel(it),
+                    order = -1,
+                    isFromHome = false
                 )
             }
     }

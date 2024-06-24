@@ -132,11 +132,11 @@ fun ApplicationsListPreview() {
     LightLauncherTheme {
         FavouriteApplicationsList(
             listOf(
-                FavouriteApplication("", "Google Maps", true),
-                FavouriteApplication("", "Phone", false),
-                FavouriteApplication("", "Messages", false),
-                FavouriteApplication("", "Settings", false),
-                FavouriteApplication("", "Photos", false),
+                FavouriteApplication("", "", "Google Maps", true),
+                FavouriteApplication("", "", "Phone", false),
+                FavouriteApplication("", "", "Messages", false),
+                FavouriteApplication("", "", "Settings", false),
+                FavouriteApplication("", "", "Photos", false),
             )
         )
     }

@@ -5,6 +5,7 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class ApplicationOrder(
+    val activityName: String,
     val packageName: String,
     val label: String,
     val order: Int?

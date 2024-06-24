@@ -1,5 +1,7 @@
 package com.darekbx.lightlauncher.ui.userapplications
 
+import android.content.ComponentName
+import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,10 +37,12 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.R
 import com.darekbx.lightlauncher.system.model.Application
+import com.darekbx.lightlauncher.ui.HomeMark
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.theme.fontFamily
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -102,9 +106,14 @@ fun AllApplicationsList(
                         .padding(start = 48.dp, end = 48.dp)
                         .clickable {
                             userApplicationsViewModel.increaseClickCount(item.packageName)
-                            val intent = context
-                                .packageManager
-                                .getLaunchIntentForPackage(item.packageName)
+                            val intent = Intent().apply {
+                                setComponent(
+                                    ComponentName(
+                                        item.packageName,
+                                        item.activityName
+                                    )
+                                )
+                            }
                             context.startActivity(intent)
                         },
                     item
@@ -209,5 +218,8 @@ fun UserApplicationView(
             color = MaterialTheme.colorScheme.onBackground,
             fontFamily = fontFamily
         )
+        if (application.isFromHome) {
+            HomeMark()
+        }
     }
 }

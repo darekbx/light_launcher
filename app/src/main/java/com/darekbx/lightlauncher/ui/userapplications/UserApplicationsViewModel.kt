@@ -30,6 +30,10 @@ class UserApplicationsViewModel(
     private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
+    companion object {
+        private val IS_HOME = "com.darekbx.home"
+    }
+
     val applicationsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
@@ -67,13 +71,16 @@ class UserApplicationsViewModel(
                 val applications = installedApps
                     .filter { installedApp ->
                         savedApps.none { savedApp ->
-                            savedApp.packageName == installedApp.packageName
+                            savedApp.activityName == installedApp.activityName
                         }
                     }
                     .map { app ->
                         Application(
+                            activityName = app.activityName,
                             packageName = app.packageName,
                             label = app.label,
+                            order = -1,
+                            isFromHome = app.packageName.contains(IS_HOME)
                         )
                     }
                     .sortedBy { it.label }
@@ -86,8 +93,11 @@ class UserApplicationsViewModel(
         val savedApps = applicationDao.fetch()
         val applications = savedApps.map { app ->
             Application(
+                activityName = app.activityName,
                 packageName = app.packageName,
                 label = app.label,
+                order = app.order,
+                isFromHome = app.packageName.contains(IS_HOME)
             )
         }
         emit(applications)

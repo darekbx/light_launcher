@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,7 +55,7 @@ fun ApplicationsOrderScreen(
 @Composable
 fun ApplicationsOrderList(
     applications: List<ApplicationOrder>,
-    setOrder: (String, Int) -> Unit = { _, _ -> }
+    setOrder: (List<ApplicationOrder>) -> Unit = { _ -> }
 ) {
     Column(
         modifier = Modifier
@@ -72,10 +73,10 @@ fun ApplicationsOrderList(
         val data = remember { mutableStateOf(applications) }
         val state = rememberReorderableLazyListState(
             onDragEnd = { fromIndex, toIndex ->
-                val toItem = data.value[toIndex]
-                val fromItem = data.value[fromIndex]
-                setOrder(toItem.packageName, toIndex)
-                setOrder(fromItem.packageName, fromIndex)
+                val order = data.value.mapIndexed { index, application ->
+                    application.copy(order = index)
+                }
+                setOrder(order)
             },
             onMove = { from, to ->
                 data.value = data.value.toMutableList().apply {
@@ -113,12 +114,19 @@ fun ApplicationOrderView(
         modifier
             .padding(top = 8.dp, bottom = 8.dp)
             .semantics { testTag = "favourite_application_view" },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top
     ) {
         Text(
             text = application.label,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
+            fontFamily = fontFamily
+        )
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            text = "(${application.order})",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White.copy(alpha = 0.5F),
             fontFamily = fontFamily
         )
     }
@@ -130,9 +138,9 @@ fun ApplicationsListPreview() {
     LightLauncherTheme {
         ApplicationsOrderList(
             listOf(
-                ApplicationOrder("", "Google Maps", null),
-                ApplicationOrder("", "Phone", null),
-                ApplicationOrder("", "Messages", null)
+                ApplicationOrder("", "", "Google Maps", null),
+                ApplicationOrder("", "", "Phone", null),
+                ApplicationOrder("", "", "Messages", null)
             )
         )
     }

@@ -30,7 +30,14 @@ class FavouritesViewModel(
     fun setFavourite(application: FavouriteApplication, isFavourite: Boolean) {
         viewModelScope.launch {
             if (isFavourite) {
-                applicationDao.add(ApplicationDto(null, application.packageName, application.label))
+                applicationDao.add(
+                    ApplicationDto(
+                        null,
+                        application.activityName,
+                        application.packageName,
+                        application.label
+                    )
+                )
             } else {
                 applicationDao.delete(application.packageName)
             }
@@ -46,6 +53,7 @@ class FavouritesViewModel(
                 val favouriteApplication = installedApps.map { installedApp ->
                     val savedApp = savedApps.find { it.packageName == installedApp.packageName }
                     FavouriteApplication(
+                        activityName = installedApp.activityName,
                         packageName = installedApp.packageName,
                         label = installedApp.label,
                         isFavourite = savedApp != null

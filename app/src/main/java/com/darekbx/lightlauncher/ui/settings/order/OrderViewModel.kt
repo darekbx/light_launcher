@@ -24,10 +24,12 @@ class OrderViewModel(
     val uiState: State<OrderedUiState>
         get() = _uiState
 
-    fun setOrder(packageName: String, order: Int) {
+    fun setOrder(order: List<ApplicationOrder>) {
         viewModelScope.launch {
             withContext(ioDispatcher) {
-                applicationDao.setOrder(packageName, order)
+                order.forEach {
+                    applicationDao.setOrder(it.packageName, (it.order ?: 0))
+                }
             }
         }
     }
@@ -39,6 +41,7 @@ class OrderViewModel(
                 val savedApps = applicationDao.fetch()
                 val favouriteApplication = savedApps.map { app ->
                     ApplicationOrder(
+                        activityName = app.activityName,
                         packageName = app.packageName,
                         label = app.label,
                         order = app?.order
