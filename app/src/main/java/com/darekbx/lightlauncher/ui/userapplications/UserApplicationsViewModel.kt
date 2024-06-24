@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
+import com.darekbx.lightlauncher.repository.local.dto.ClickCountDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.model.Application
 import kotlinx.coroutines.CoroutineDispatcher
@@ -53,10 +54,16 @@ class UserApplicationsViewModel(
         })
     }
 
-    fun increaseClickCount(packgeName: String) {
+    fun increaseClickCount(packageName: String) {
         viewModelScope.launch {
             withContext(ioDispatcher) {
-                clickCountDao.increaseClicks(packgeName)
+                with (clickCountDao) {
+                    if (get(packageName) == null) {
+                        add(ClickCountDto(null, packageName, 1))
+                    } else {
+                        increaseClicks(packageName)
+                    }
+                }
             }
         }
     }
