@@ -48,14 +48,14 @@ class UserApplicationsViewModel(
     val uiState: State<UserApplicationsUiState>
         get() = _uiState
 
-    fun increaseClickCount(packageName: String) {
+    fun increaseClickCount(item: Application) {
         viewModelScope.launch {
             withContext(ioDispatcher) {
-                with (clickCountDao) {
-                    if (get(packageName) == null) {
-                        add(ClickCountDto(null, packageName, 1))
+                with(clickCountDao) {
+                    if (get(item.activityName) == null) {
+                        add(ClickCountDto(null, item.activityName, 1))
                     } else {
-                        increaseClicks(packageName)
+                        increaseClicks(item.activityName)
                     }
                 }
             }

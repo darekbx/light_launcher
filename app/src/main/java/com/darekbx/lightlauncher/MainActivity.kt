@@ -1,11 +1,11 @@
 package com.darekbx.lightlauncher
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
@@ -19,22 +19,15 @@ import androidx.navigation.compose.rememberNavController
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel
 import com.darekbx.shoppinglist.navigation.AppNavHost
+import com.darekbx.shoppinglist.navigation.UserApplicationsDestination
 import org.koin.androidx.compose.koinViewModel
 
 /**
  * Light phone launcher
  *
  * - min 60% of code coverage!
- *
- * - apps list (lowercase), is scrolled by pages, with page indiction dots
- * - on the list will be only selected apps (from settings)
- * - in settings: selecting apps, reordering
  * - dotpad: "dot pad (12)"
  * - "geo tracker (1253km)" or with some details 9sp below app nape
- * - ideas:
- *   - swipe left to show list of "tools": fuel, books, weight ...
- * - statistics:
- *   - app click count
  */
 class MainActivity : ComponentActivity() {
 
@@ -59,18 +52,23 @@ class MainActivity : ComponentActivity() {
                 unregisterReceiver(userApplicationsViewModel.applicationsReceiver)
             }
         }
+
         LightLauncherTheme {
             val navController = rememberNavController()
-            Scaffold(
-                topBar = { },
-                content = { innerPadding ->
-                    AppNavHost(
-                        modifier = Modifier.padding(innerPadding),
-                        controller = navController
-                    )
-                },
-                bottomBar = { /*BottomNavigation(navController)*/ }
-            )
+
+            BackHandler {
+                if (navController.currentDestination?.route != UserApplicationsDestination.route) {
+                    navController.popBackStack()
+                }
+            }
+
+            Scaffold(content = { innerPadding ->
+                AppNavHost(
+                    modifier = Modifier.padding(innerPadding),
+                    controller = navController
+                )
+            })
+
             SetNavigationBarColor()
         }
     }
@@ -90,4 +88,3 @@ class MainActivity : ComponentActivity() {
         )
     }
 }
-

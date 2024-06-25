@@ -34,49 +34,64 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.R
 import com.darekbx.lightlauncher.system.model.Application
-import com.darekbx.lightlauncher.ui.HomeMark
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.theme.fontFamily
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun UserApplicationsScreen(
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onStatisticsClick: () -> Unit
 ) {
+    val isPaged = true
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
+
     HorizontalPager(modifier = Modifier.fillMaxSize(), state = pagerState) { page ->
         when (page) {
-            0 -> UserApplicationsList(
-                onArrowClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(1)
-                    }
+            0 -> {
+                if (isPaged) {
+                    UserApplicationsListPaged(
+                        onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                    )
+                } else {
+                    UserApplicationsList(
+                        onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                    )
                 }
-            )
+            }
 
-            1 -> AllApplicationsList(
-                onSettingsClick = onSettingsClick,
-                onArrowClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(0)
-                    }
+            1 -> {
+                if (isPaged) {
+                    AllApplicationsListPaged(
+                        onSettingsClick = onSettingsClick,
+                        onStatisticsClick = onStatisticsClick,
+                        onArrowClick = { scope.launch { pagerState.animateScrollToPage(0) } }
+                    )
+                } else {
+                    AllApplicationsList(
+                        onSettingsClick = onSettingsClick,
+                        onStatisticsClick = onStatisticsClick,
+                        onArrowClick = { scope.launch { pagerState.animateScrollToPage(0) } }
+                    )
                 }
-            )
+            }
         }
     }
 }
+
 
 @Composable
 fun AllApplicationsList(
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
     onSettingsClick: () -> Unit = { },
+    onStatisticsClick: () -> Unit = { },
     onArrowClick: () -> Unit = { }
 ) {
     val state by userApplicationsViewModel.uiState
@@ -105,7 +120,7 @@ fun AllApplicationsList(
                         .fillMaxWidth()
                         .padding(start = 48.dp, end = 48.dp)
                         .clickable {
-                            userApplicationsViewModel.increaseClickCount(item.packageName)
+                            userApplicationsViewModel.increaseClickCount(item)
                             val intent = Intent().apply {
                                 setComponent(
                                     ComponentName(
@@ -142,9 +157,9 @@ fun AllApplicationsList(
             Icon(
                 modifier = Modifier
                     .padding(16.dp)
-                    .clickable { onSettingsClick() },
+                    .clickable { onStatisticsClick() },
                 painter = painterResource(id = R.drawable.ic_chart),
-                contentDescription = "settings"
+                contentDescription = "statistics"
             )
         }
     }
@@ -177,7 +192,7 @@ fun UserApplicationsList(
                         .fillMaxWidth()
                         .padding(start = 48.dp, end = 48.dp)
                         .clickable {
-                            userApplicationsViewModel.increaseClickCount(item.packageName)
+                            userApplicationsViewModel.increaseClickCount(item)
                             val intent = context
                                 .packageManager
                                 .getLaunchIntentForPackage(item.packageName)
@@ -216,10 +231,8 @@ fun UserApplicationView(
             text = application.label,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
+            textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             fontFamily = fontFamily
         )
-        if (application.isFromHome) {
-            HomeMark()
-        }
     }
 }

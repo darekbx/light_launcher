@@ -11,13 +11,16 @@ interface ClickCountDao {
     @Insert
     suspend fun add(clickCountDto: ClickCountDto)
 
-    @Query("SELECT * FROM click_count WHERE package_name = :packageName")
-    suspend fun get(packageName: String): ClickCountDto?
+    @Query("SELECT * FROM click_count ORDER BY count DESC")
+    suspend fun fetch(): List<ClickCountDto>
+
+    @Query("SELECT * FROM click_count WHERE activity_name = :activityName")
+    suspend fun get(activityName: String): ClickCountDto?
 
     @Query("""
 UPDATE click_count
-SET count = (SELECT count FROM click_count WHERE package_name = :packageName) + 1
-WHERE package_name = :packageName
+SET count = (SELECT count FROM click_count WHERE activity_name = :activityName) + 1
+WHERE activity_name = :activityName
 """)
-    suspend fun increaseClicks(packageName: String)
+    suspend fun increaseClicks(activityName: String)
 }

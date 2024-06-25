@@ -57,7 +57,7 @@ class FavouritesViewModelTest {
         coEvery { applicationDao.add(capture(slot)) } answers { }
 
         // when
-        viewModel.setFavourite(FavouriteApplication(packageName, "label", true), true)
+        viewModel.setFavourite(FavouriteApplication("", packageName, "label", true), true)
 
         // then
         assertEquals(packageName, slot.captured.packageName)
@@ -72,7 +72,7 @@ class FavouritesViewModelTest {
         coEvery { applicationDao.delete(any()) } returns Unit
 
         // when
-        viewModel.setFavourite(FavouriteApplication(packageName, "label", true), false)
+        viewModel.setFavourite(FavouriteApplication("", packageName, "label", true), false)
 
         // then
         coVerify { applicationDao.delete(packageName) }
@@ -82,8 +82,8 @@ class FavouritesViewModelTest {
     fun `loadFavouriteApplications fetches mapped item`() = runTest {
         // given
         coEvery { applicationsProvider.listInstalledApplications() } returns listOf(
-            Application("com.test.app1", "Test app1"),
-            Application("com.test.app2", "Test app2")
+            Application("", "com.test.app1", "Test app1", 0, false),
+            Application("", "com.test.app2", "Test app2", 0, false)
         )
         coEvery { applicationDao.fetch() } returns listOf(
             ApplicationDto(1L, "com.test.app1"),

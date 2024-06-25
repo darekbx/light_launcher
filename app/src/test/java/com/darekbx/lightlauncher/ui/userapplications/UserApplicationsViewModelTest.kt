@@ -67,8 +67,8 @@ class UserApplicationsViewModelTest {
     fun `loadAllApplications fetches mapped item`() = runTest {
         // given
         coEvery { applicationsProvider.listInstalledApplications() } returns listOf(
-            Application("com.test.app1", "Test app1"),
-            Application("com.test.app2", "Test app2")
+            Application("", "com.test.app1", "Test app1", 0, false),
+            Application("", "com.test.app2", "Test app2", 0, false)
         )
         coEvery { applicationDao.fetch() } returns listOf(
             ApplicationDto(1L, "com.test.app1", "Test app1"),

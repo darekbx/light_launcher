@@ -11,6 +11,7 @@ import com.darekbx.lightlauncher.system.BasePackageManager
 import com.darekbx.lightlauncher.system.PackageManagerWrapper
 import com.darekbx.lightlauncher.ui.settings.favourites.FavouritesViewModel
 import com.darekbx.lightlauncher.ui.settings.order.OrderViewModel
+import com.darekbx.lightlauncher.ui.statistics.StatisticsViewModel
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
@@ -55,5 +56,8 @@ val viewModelModule = module {
             get(),
             get(named("io_dispatcher"))
         )
+    }
+    viewModel {
+        StatisticsViewModel(get(), get())
     }
 }

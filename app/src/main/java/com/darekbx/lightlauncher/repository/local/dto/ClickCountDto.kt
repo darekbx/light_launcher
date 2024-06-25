@@ -7,6 +7,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "click_count")
 class ClickCountDto(
     @PrimaryKey(autoGenerate = true) var id: Long? = null,
-    @ColumnInfo(name = "package_name") var packageName: String = "",
+    @ColumnInfo(name = "activity_name") var activityName: String = "",
     @ColumnInfo(name = "count") var count: Int = 0
 )

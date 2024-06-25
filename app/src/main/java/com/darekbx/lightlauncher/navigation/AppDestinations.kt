@@ -8,6 +8,10 @@ object SettingsDestination : AppDestinations {
     override val route = "settings"
 }
 
+object StatisticsDestination : AppDestinations {
+    override val route = "statistics"
+}
+
 object FavouriteApplicationsDestination : AppDestinations {
     override val route = "favourite_applications"
 }

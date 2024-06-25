@@ -2,14 +2,13 @@ package com.darekbx.shoppinglist.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.darekbx.lightlauncher.ui.settings.SettingsScreen
 import com.darekbx.lightlauncher.ui.settings.favourites.FavouriteApplicationsScreen
 import com.darekbx.lightlauncher.ui.settings.order.ApplicationsOrderScreen
+import com.darekbx.lightlauncher.ui.statistics.StatisticsScreen
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsScreen
 
 @Composable
@@ -23,16 +22,16 @@ fun AppNavHost(
         modifier = modifier
     ) {
         composable(route = UserApplicationsDestination.route) {
-            UserApplicationsScreen {
-                controller.navigate(SettingsDestination.route)
-            }
+            UserApplicationsScreen(
+                onSettingsClick = { controller.navigate(SettingsDestination.route) },
+                onStatisticsClick = { controller.navigate(StatisticsDestination.route) }
+            )
         }
 
         composable(route = SettingsDestination.route) {
             SettingsScreen(
                 openFavouriteApplications = { controller.navigate(FavouriteApplicationsDestination.route) },
                 openApplicationsOrder = { controller.navigate(ApplicationsOrderDestination.route) },
-                openStatistics = {}
             )
         }
 
@@ -43,14 +42,9 @@ fun AppNavHost(
         composable(route = ApplicationsOrderDestination.route) {
             ApplicationsOrderScreen()
         }
+
+        composable(route = StatisticsDestination.route) {
+            StatisticsScreen()
+        }
     }
 }
-
-fun NavController.navigateSingleTopTo(route: String) =
-    this.navigate(route) {
-        popUpTo(this@navigateSingleTopTo.graph.findStartDestination().id) {
-            saveState = true
-        }
-        launchSingleTop = true
-        restoreState = true
-    }

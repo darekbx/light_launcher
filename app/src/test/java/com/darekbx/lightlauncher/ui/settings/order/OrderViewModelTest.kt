@@ -2,6 +2,7 @@ package com.darekbx.lightlauncher.ui.settings.order
 
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
+import com.darekbx.lightlauncher.system.model.ApplicationOrder
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -44,7 +45,7 @@ class OrderViewModelTest {
         coEvery { applicationDao.setOrder("com.test.app1", 10) } answers { }
 
         // when
-        viewModel.setOrder("com.test.app1", 10)
+        viewModel.setOrder(listOf(ApplicationOrder("", "com.test.app1", "", 10)))
 
         // then
         coVerify { applicationDao.setOrder("com.test.app1", 10) }
