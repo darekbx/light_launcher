@@ -176,27 +176,27 @@ private fun BoxScope.NavigationArrows(pagerState: PagerState) {
     ) {
         Icon(
             modifier = Modifier
-                .padding(16.dp)
                 .clickable {
                     scope.launch {
                         if (pagerState.currentPage > 0) {
                             pagerState.animateScrollToPage(pagerState.currentPage - 1)
                         }
                     }
-                },
+                }
+                .padding(16.dp),
             imageVector = Icons.Default.KeyboardArrowUp,
             contentDescription = "up"
         )
         Icon(
             modifier = Modifier
-                .padding(16.dp)
                 .clickable {
                     scope.launch {
                         if (pagerState.currentPage < pagerState.pageCount - 1) {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     }
-                },
+                }
+                .padding(16.dp),
             imageVector = Icons.Default.KeyboardArrowDown,
             contentDescription = "down"
         )
@@ -240,22 +240,22 @@ private fun BoxScope.LeftMenu(
     ) {
         Icon(
             modifier = Modifier
-                .padding(16.dp)
-                .clickable { onArrowClick() },
+                .clickable { onArrowClick() }
+                .padding(16.dp),
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "forward"
         )
         Icon(
             modifier = Modifier
-                .padding(16.dp)
-                .clickable { onSettingsClick() },
+                .clickable { onSettingsClick() }
+                .padding(16.dp),
             imageVector = Icons.Default.Settings,
             contentDescription = "settings"
         )
         Icon(
             modifier = Modifier
-                .padding(16.dp)
-                .clickable { onStatisticsClick() },
+                .clickable { onStatisticsClick() }
+                .padding(16.dp),
             painter = painterResource(id = R.drawable.ic_chart),
             contentDescription = "statistics"
         )
