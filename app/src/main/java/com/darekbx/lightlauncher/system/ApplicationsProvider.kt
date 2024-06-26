@@ -14,7 +14,7 @@ class ApplicationsProvider(
             .queryIntentActivities(intent, flags = 0)
             .map {
                 Application(
-                    it.activityInfo.name,
+                    getActivityName(it),
                     getPackageName(it),
                     packageManager.getApplicationLabel(it),
                     order = -1,
@@ -23,8 +23,11 @@ class ApplicationsProvider(
             }
     }
 
-    fun getPackageName(it: ResolveInfo): String =
-        it.activityInfo.applicationInfo.packageName
+    fun getPackageName(resolveInfo: ResolveInfo): String =
+        resolveInfo.activityInfo.applicationInfo.packageName
+
+    fun getActivityName(resolveInfo: ResolveInfo): String =
+        resolveInfo.activityInfo.name
 
     fun launcherIntent() =
         Intent(Intent.ACTION_MAIN).apply {

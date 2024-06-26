@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="BIND_NOTIFICATION_LISTENER_SERVICE" />
 
     <application
         android:name=".LauncherApp"
@@ -24,13 +25,22 @@
             android:stateNotNeeded="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.LightLauncher"
-            tools:ignore="LockedOrientationActivity">
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".system.NotificationListener"
+            android:exported="false"
+            android:label="Notifications service"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

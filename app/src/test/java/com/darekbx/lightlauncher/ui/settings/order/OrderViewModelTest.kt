@@ -42,20 +42,20 @@ class OrderViewModelTest {
     @Test
     fun `should set application order`() = runTest {
         // given
-        coEvery { applicationDao.setOrder("com.test.app1", 10) } answers { }
+        coEvery { applicationDao.setOrder("Activity name", 10) } answers { }
 
         // when
-        viewModel.setOrder(listOf(ApplicationOrder("", "com.test.app1", "", 10)))
+        viewModel.setOrder(listOf(ApplicationOrder("Activity name", "com.test.app1", "", 10)))
 
         // then
-        coVerify { applicationDao.setOrder("com.test.app1", 10) }
+        coVerify { applicationDao.setOrder("Activity name", 10) }
     }
 
     @Test
     fun `loadApplicationsOrder fetches mapped item`() = runTest {
         // given
         coEvery { applicationDao.fetch() } returns listOf(
-            ApplicationDto(1L, "com.test.app1", "Test app1", order = 1),
+            ApplicationDto(1L, "Test app1", "com.test.app1", order = 1, label = "Test app1"),
         )
 
         // when

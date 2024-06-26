@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,14 +30,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.R
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import kotlin.math.ceil
 import kotlin.math.min
@@ -54,6 +58,7 @@ fun UserApplicationsListPaged(
     if (applications.isEmpty()) {
         return Loading()
     }
+
     ApplicationsListPaged(applications, additionalView = {
         ArrowRight(onArrowClick)
     }) {
@@ -155,13 +160,53 @@ fun ApplicationsListPaged(
             }
         }
 
-        PageIndicator(pages, pagerState.currentPage)
+        PageIndicator(pagerState)
+        NavigationArrows(pagerState)
         additionalView()
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun BoxScope.PageIndicator(pages: Int, currentPage: Int) {
+private fun BoxScope.NavigationArrows(pagerState: PagerState) {
+    val scope = rememberCoroutineScope()
+    Column(
+        modifier = Modifier.align(Alignment.BottomEnd),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            modifier = Modifier
+                .padding(16.dp)
+                .clickable {
+                    scope.launch {
+                        if (pagerState.currentPage > 0) {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    }
+                },
+            imageVector = Icons.Default.KeyboardArrowUp,
+            contentDescription = "up"
+        )
+        Icon(
+            modifier = Modifier
+                .padding(16.dp)
+                .clickable {
+                    scope.launch {
+                        if (pagerState.currentPage < pagerState.pageCount - 1) {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    }
+                },
+            imageVector = Icons.Default.KeyboardArrowDown,
+            contentDescription = "down"
+        )
+    }
+
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun BoxScope.PageIndicator(pagerState: PagerState) {
     Column(
         modifier = Modifier
             .align(Alignment.BottomStart)
@@ -170,12 +215,12 @@ private fun BoxScope.PageIndicator(pages: Int, currentPage: Int) {
     ) {
         val backgroundModifier =
             Modifier.background(MaterialTheme.colorScheme.onBackground, CircleShape)
-        (0 until pages).forEach { index ->
+        (0 until pagerState.pageCount).forEach { index ->
             Spacer(
                 modifier = Modifier
                     .padding(8.dp)
                     .size(8.dp)
-                    .then(if (index == currentPage) backgroundModifier else Modifier)
+                    .then(if (index == pagerState.currentPage) backgroundModifier else Modifier)
                     .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape),
             )
         }

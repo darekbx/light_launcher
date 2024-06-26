@@ -42,6 +42,6 @@ interface ApplicationDao {
      * @param packageName The package name of the application to be updated.
      * @param order The new order of the application.
      */
-    @Query("UPDATE application SET `order` = :order WHERE package_name = :packageName")
-    suspend fun setOrder(packageName: String, order: Int)
+    @Query("UPDATE application SET `order` = :order WHERE activity_name = :activityName")
+    suspend fun setOrder(activityName: String, order: Int)
 }

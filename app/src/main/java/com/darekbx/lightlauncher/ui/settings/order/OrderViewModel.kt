@@ -28,7 +28,7 @@ class OrderViewModel(
         viewModelScope.launch {
             withContext(ioDispatcher) {
                 order.forEach {
-                    applicationDao.setOrder(it.packageName, (it.order ?: 0))
+                    applicationDao.setOrder(it.activityName, (it.order ?: 0))
                 }
             }
         }

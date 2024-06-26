@@ -29,6 +29,7 @@ class ApplicationsProviderTest {
         val applicationsProvider = spyk(ApplicationsProvider(packageManagerWrapper)) {
             every { launcherIntent() } returns mockk()
             every { getPackageName(any()) } returns "com.package.name"
+            every { getActivityName(any()) } returns "Activity name"
         }
 
         // when
@@ -38,6 +39,7 @@ class ApplicationsProviderTest {
         assertEquals(1, apps.size)
         with(apps.first()) {
             assertEquals("Label", label)
+            assertEquals("Activity name", activityName)
             assertEquals("com.package.name", packageName)
         }
     }

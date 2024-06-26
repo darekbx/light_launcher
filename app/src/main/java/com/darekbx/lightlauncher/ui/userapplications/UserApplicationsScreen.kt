@@ -2,6 +2,7 @@ package com.darekbx.lightlauncher.ui.userapplications
 
 import android.content.ComponentName
 import android.content.Intent
+import android.widget.Space
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,13 +10,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -30,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
@@ -122,12 +127,7 @@ fun AllApplicationsList(
                         .clickable {
                             userApplicationsViewModel.increaseClickCount(item)
                             val intent = Intent().apply {
-                                setComponent(
-                                    ComponentName(
-                                        item.packageName,
-                                        item.activityName
-                                    )
-                                )
+                                setComponent(ComponentName(item.packageName, item.activityName))
                             }
                             context.startActivity(intent)
                         },
@@ -217,8 +217,11 @@ fun UserApplicationsList(
 @Composable
 fun UserApplicationView(
     modifier: Modifier = Modifier,
-    application: Application
+    application: Application,
+    notificationViewModel: NotificationViewModel = koinViewModel()
 ) {
+    val notifications by notificationViewModel.fetchNotifications()
+        .collectAsState(initial = emptyList())
     Row(
         modifier
             .fillMaxWidth()
@@ -234,5 +237,14 @@ fun UserApplicationView(
             textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             fontFamily = fontFamily
         )
+
+        if (notifications.any { it.packageName == application.packageName }) {
+            Spacer(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(8.dp)
+                    .background(MaterialTheme.colorScheme.onBackground, CircleShape)
+            )
+        }
     }
 }

@@ -3,8 +3,10 @@ package com.darekbx.lightlauncher.di
 import android.app.Application
 import androidx.room.Room
 import com.darekbx.lightlauncher.repository.local.AppDatabase
+import com.darekbx.lightlauncher.repository.local.AppDatabase.Companion.MIGRATION_1_2
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
+import com.darekbx.lightlauncher.repository.local.dao.NotificationDao
 import com.darekbx.lightlauncher.system.ApplicationsProvider
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
@@ -12,6 +14,7 @@ import com.darekbx.lightlauncher.system.PackageManagerWrapper
 import com.darekbx.lightlauncher.ui.settings.favourites.FavouritesViewModel
 import com.darekbx.lightlauncher.ui.settings.order.OrderViewModel
 import com.darekbx.lightlauncher.ui.statistics.StatisticsViewModel
+import com.darekbx.lightlauncher.ui.userapplications.NotificationViewModel
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
@@ -23,10 +26,12 @@ val databaseModule = module {
     single<AppDatabase> {
         Room
             .databaseBuilder(get<Application>(), AppDatabase::class.java, AppDatabase.DB_NAME)
+            .addMigrations(MIGRATION_1_2)
             .build()
     }
     single<ApplicationDao> { get<AppDatabase>().applicationDao() }
     single<ClickCountDao> { get<AppDatabase>().clickCountDao() }
+    single<NotificationDao> { get<AppDatabase>().notificationDao() }
 }
 
 val appModule = module {
@@ -59,5 +64,8 @@ val viewModelModule = module {
     }
     viewModel {
         StatisticsViewModel(get(), get())
+    }
+    viewModel {
+        NotificationViewModel(get())
     }
 }
