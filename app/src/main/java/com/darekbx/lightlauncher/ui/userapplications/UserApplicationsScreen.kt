@@ -31,7 +31,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.R
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
+import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
 import com.darekbx.lightlauncher.ui.theme.fontFamily
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -51,10 +55,18 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun UserApplicationsScreen(
+    settingsViewModel: SettingsViewModel = koinViewModel(),
     onSettingsClick: () -> Unit,
     onStatisticsClick: () -> Unit
 ) {
-    val isPaged = true
+    var isPaged by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        settingsViewModel.load { usePages, _ ->
+            isPaged = usePages
+        }
+    }
+
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
 

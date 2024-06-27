@@ -1,9 +1,14 @@
 package com.darekbx.lightlauncher.di
 
 import android.app.Application
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.darekbx.lightlauncher.repository.local.AppDatabase
 import com.darekbx.lightlauncher.repository.local.AppDatabase.Companion.MIGRATION_1_2
+import com.darekbx.lightlauncher.repository.local.SettingsStore
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
 import com.darekbx.lightlauncher.repository.local.dao.NotificationDao
@@ -11,6 +16,7 @@ import com.darekbx.lightlauncher.system.ApplicationsProvider
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
 import com.darekbx.lightlauncher.system.PackageManagerWrapper
+import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
 import com.darekbx.lightlauncher.ui.settings.favourites.FavouritesViewModel
 import com.darekbx.lightlauncher.ui.settings.order.OrderViewModel
 import com.darekbx.lightlauncher.ui.statistics.StatisticsViewModel
@@ -21,6 +27,8 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "launcher_preferences")
 
 val databaseModule = module {
     single<AppDatabase> {
@@ -38,6 +46,8 @@ val appModule = module {
     single(named("io_dispatcher")) { Dispatchers.IO }
     single<BasePackageManager> { PackageManagerWrapper(androidContext().packageManager) }
     single<BaseApplicationsProvider> { ApplicationsProvider(get()) }
+    single { androidContext().dataStore }
+    single { SettingsStore(get()) }
 }
 
 val viewModelModule = module {
@@ -67,5 +77,8 @@ val viewModelModule = module {
     }
     viewModel {
         NotificationViewModel(get())
+    }
+    viewModel {
+        SettingsViewModel(get())
     }
 }

@@ -17,6 +17,7 @@ coreKtxVersion = "1.5.0"
 composeNavigation = "2.7.7"
 reordeable = "0.9.6"
 kotlinxCoroutinesTestVersion = "1.6.0"
+dataStore = "1.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +45,7 @@ core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "coreKtxV
 androidx-compose-navigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 compose-reordeable = { group = "org.burnoutcrew.composereorderable", name = "reorderable", version.ref = "reordeable" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
+data-store = { module = "androidx.datastore:datastore-preferences", version.ref = "dataStore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

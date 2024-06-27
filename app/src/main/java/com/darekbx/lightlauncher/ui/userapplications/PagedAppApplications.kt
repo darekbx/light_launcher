@@ -30,16 +30,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.R
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
+import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import kotlin.math.ceil
@@ -59,25 +62,14 @@ fun UserApplicationsListPaged(
         return Loading()
     }
 
-    ApplicationsListPaged(applications, additionalView = {
-        ArrowRight(onArrowClick)
-    }) {
+    ApplicationsListPaged(
+        applications = applications,
+        arrowView = { ArrowRight(onArrowClick) }
+    ) {
         userApplicationsViewModel.increaseClickCount(it)
         val intent = Intent().apply { setComponent(ComponentName(it.packageName, it.activityName)) }
         context.startActivity(intent)
     }
-}
-
-@Composable
-private fun BoxScope.ArrowRight(onArrowClick: () -> Unit) {
-    Icon(
-        modifier = Modifier
-            .align(Alignment.TopEnd)
-            .padding(16.dp)
-            .clickable { onArrowClick() },
-        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-        contentDescription = "forward"
-    )
 }
 
 @Composable
@@ -99,9 +91,12 @@ fun AllApplicationsListPaged(
     }
 
     val applications = (state as UserApplicationsUiState.Done).applications
-    ApplicationsListPaged(applications, additionalView = {
-        LeftMenu(onArrowClick, onSettingsClick, onStatisticsClick)
-    }) {
+    ApplicationsListPaged(
+        applications = applications,
+        arrowView = { ArrowLeft(onArrowClick) },
+        onSettingsClick = onSettingsClick,
+        onStatisticsClick = onStatisticsClick
+    ) {
         userApplicationsViewModel.increaseClickCount(it)
         val intent = Intent().apply { setComponent(ComponentName(it.packageName, it.activityName)) }
         context.startActivity(intent)
@@ -111,11 +106,20 @@ fun AllApplicationsListPaged(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ApplicationsListPaged(
+    settingsViewModel: SettingsViewModel = koinViewModel(),
     applications: List<Application>,
-    additionalView: @Composable BoxScope.() -> Unit = {},
-    onAppClick: (Application) -> Unit = { },
+    arrowView: @Composable BoxScope.() -> Unit = {},
+    onSettingsClick: (() -> Unit)? = null,
+    onStatisticsClick: (() -> Unit)? = null,
+    onAppClick: (Application) -> Unit = { }
 ) {
-    val pageSize = 10
+    var pageSize by remember { mutableStateOf(10) }
+
+    LaunchedEffect(Unit) {
+        settingsViewModel.load { _, pageSizeValue ->
+            pageSize = pageSizeValue
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         val pages = ceil(applications.size / pageSize.toFloat()).toInt()
@@ -161,19 +165,42 @@ fun ApplicationsListPaged(
         }
 
         PageIndicator(pagerState)
-        NavigationArrows(pagerState)
-        additionalView()
+        NavigationArrows(pagerState, { arrowView() }, onSettingsClick, onStatisticsClick)
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun BoxScope.NavigationArrows(pagerState: PagerState) {
+private fun BoxScope.NavigationArrows(
+    pagerState: PagerState,
+    arrowView: @Composable () -> Unit,
+    onSettingsClick: (() -> Unit)? = null,
+    onStatisticsClick: (() -> Unit)? = null
+) {
     val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier.align(Alignment.BottomEnd),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        onSettingsClick?.let {
+            Icon(
+                modifier = Modifier
+                    .clickable { onSettingsClick() }
+                    .padding(24.dp),
+                imageVector = Icons.Default.Settings,
+                contentDescription = "settings"
+            )
+        }
+        onStatisticsClick?.let {
+            Icon(
+                modifier = Modifier
+                    .clickable { onStatisticsClick() }
+                    .padding(24.dp),
+                painter = painterResource(id = R.drawable.ic_chart),
+                contentDescription = "statistics"
+            )
+        }
+        arrowView()
         Icon(
             modifier = Modifier
                 .clickable {
@@ -183,7 +210,7 @@ private fun BoxScope.NavigationArrows(pagerState: PagerState) {
                         }
                     }
                 }
-                .padding(16.dp),
+                .padding(24.dp),
             imageVector = Icons.Default.KeyboardArrowUp,
             contentDescription = "up"
         )
@@ -196,7 +223,7 @@ private fun BoxScope.NavigationArrows(pagerState: PagerState) {
                         }
                     }
                 }
-                .padding(16.dp),
+                .padding(24.dp),
             imageVector = Icons.Default.KeyboardArrowDown,
             contentDescription = "down"
         )
@@ -210,7 +237,7 @@ private fun BoxScope.PageIndicator(pagerState: PagerState) {
     Column(
         modifier = Modifier
             .align(Alignment.BottomStart)
-            .padding(16.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val backgroundModifier =
@@ -227,37 +254,24 @@ private fun BoxScope.PageIndicator(pagerState: PagerState) {
     }
 }
 
+@Composable
+private fun ArrowRight(onArrowClick: () -> Unit) {
+    Icon(
+        modifier = Modifier
+            .clickable { onArrowClick() }
+            .padding(24.dp),
+        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+        contentDescription = "forward"
+    )
+}
 
 @Composable
-private fun BoxScope.LeftMenu(
-    onArrowClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    onStatisticsClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier.align(Alignment.TopStart),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            modifier = Modifier
-                .clickable { onArrowClick() }
-                .padding(16.dp),
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = "forward"
-        )
-        Icon(
-            modifier = Modifier
-                .clickable { onSettingsClick() }
-                .padding(16.dp),
-            imageVector = Icons.Default.Settings,
-            contentDescription = "settings"
-        )
-        Icon(
-            modifier = Modifier
-                .clickable { onStatisticsClick() }
-                .padding(16.dp),
-            painter = painterResource(id = R.drawable.ic_chart),
-            contentDescription = "statistics"
-        )
-    }
+private fun ArrowLeft(onArrowClick: () -> Unit) {
+    Icon(
+        modifier = Modifier
+            .clickable { onArrowClick() }
+            .padding(24.dp),
+        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+        contentDescription = "back"
+    )
 }
