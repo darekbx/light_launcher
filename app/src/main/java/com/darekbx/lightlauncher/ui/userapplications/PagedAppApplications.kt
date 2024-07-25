@@ -1,7 +1,5 @@
 package com.darekbx.lightlauncher.ui.userapplications
 
-import android.content.ComponentName
-import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,6 +24,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,8 +37,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.R
+import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
@@ -58,17 +59,12 @@ fun UserApplicationsListPaged(
         .loadApplications()
         .collectAsState(initial = emptyList())
 
-    if (applications.isEmpty()) {
-        return Loading()
-    }
-
     ApplicationsListPaged(
         applications = applications,
         arrowView = { ArrowRight(onArrowClick) }
     ) {
         userApplicationsViewModel.increaseClickCount(it)
-        val intent = Intent().apply { setComponent(ComponentName(it.packageName, it.activityName)) }
-        context.startActivity(intent)
+        ActivityStarter.startApplication(context, it)
     }
 }
 
@@ -98,8 +94,7 @@ fun AllApplicationsListPaged(
         onStatisticsClick = onStatisticsClick
     ) {
         userApplicationsViewModel.increaseClickCount(it)
-        val intent = Intent().apply { setComponent(ComponentName(it.packageName, it.activityName)) }
-        context.startActivity(intent)
+        ActivityStarter.startApplication(context, it)
     }
 }
 
@@ -122,6 +117,15 @@ fun ApplicationsListPaged(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+
+        if (applications.isEmpty()) {
+            Text(
+                modifier = Modifier.padding(64.dp).align(Alignment.Center),
+                textAlign = TextAlign.Center,
+                text = "There's nothing, select favourite applications from settings."
+            )
+        }
+
         val pages = ceil(applications.size / pageSize.toFloat()).toInt()
         val pagerState = rememberPagerState(pageCount = { pages })
         VerticalPager(state = pagerState) { page ->
@@ -144,6 +148,7 @@ fun ApplicationsListPaged(
                             contentDescription = "up"
                         )
                     }
+
                     items.forEach {
                         UserApplicationView(
                             modifier = Modifier
@@ -153,6 +158,7 @@ fun ApplicationsListPaged(
                             it
                         )
                     }
+
                     if (pagerState.currentPage != pages - 1) {
                         Icon(
                             modifier = Modifier.padding(top = 16.dp),

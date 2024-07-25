@@ -2,7 +2,6 @@ package com.darekbx.lightlauncher.ui.userapplications
 
 import android.content.ComponentName
 import android.content.Intent
-import android.widget.Space
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,20 +36,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.R
+import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
 import com.darekbx.lightlauncher.ui.theme.fontFamily
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -205,10 +206,7 @@ fun UserApplicationsList(
                         .padding(start = 48.dp, end = 48.dp)
                         .clickable {
                             userApplicationsViewModel.increaseClickCount(item)
-                            val intent = context
-                                .packageManager
-                                .getLaunchIntentForPackage(item.packageName)
-                            context.startActivity(intent)
+                            ActivityStarter.startApplication(context, item)
                         },
                     item
                 )
@@ -237,7 +235,7 @@ fun UserApplicationView(
     Row(
         modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 8.dp)
+            .padding(top = 12.dp, bottom = 12.dp)
             .semantics { testTag = "favourite_application_view" },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -246,6 +244,7 @@ fun UserApplicationView(
             text = application.label,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
+            fontWeight = FontWeight.ExtraBold,
             textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             fontFamily = fontFamily
         )

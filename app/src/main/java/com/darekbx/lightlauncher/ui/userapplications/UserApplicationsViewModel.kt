@@ -36,9 +36,22 @@ class UserApplicationsViewModel(
 
     val applicationsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            checkIfAppShouldBeRemoved(intent)
             when (intent.action) {
                 Intent.ACTION_PACKAGE_ADDED, Intent.ACTION_PACKAGE_REMOVED -> {
                     loadAllApplications()
+                }
+            }
+        }
+    }
+
+    private fun checkIfAppShouldBeRemoved(intent: Intent) {
+        if (intent.action == Intent.ACTION_PACKAGE_REMOVED) {
+            intent.data?.schemeSpecificPart?.let { packageName ->
+                viewModelScope.launch {
+                    withContext(ioDispatcher) {
+                        applicationDao.delete(packageName)
+                    }
                 }
             }
         }
