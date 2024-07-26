@@ -1,5 +1,6 @@
 package com.darekbx.lightlauncher
 
+import android.app.Activity
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
@@ -13,8 +14,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel
@@ -87,5 +91,12 @@ class MainActivity : ComponentActivity() {
                 detectDarkMode = { true }
             )
         )
+        val view = LocalView.current
+        if (!view.isInEditMode) {
+            SideEffect {
+                val window = (view.context as Activity).window
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+            }
+        }
     }
 }
