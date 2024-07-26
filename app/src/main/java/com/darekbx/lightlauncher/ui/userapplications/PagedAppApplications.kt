@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -35,7 +36,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,15 +46,16 @@ import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import kotlin.math.ceil
 import kotlin.math.min
 
 @Composable
 fun UserApplicationsListPaged(
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
+    activityStarter: ActivityStarter = koinInject(),
     onArrowClick: () -> Unit = { }
 ) {
-    val context = LocalContext.current
     val applications by userApplicationsViewModel
         .loadApplications()
         .collectAsState(initial = emptyList())
@@ -64,19 +65,19 @@ fun UserApplicationsListPaged(
         arrowView = { ArrowRight(onArrowClick) }
     ) {
         userApplicationsViewModel.increaseClickCount(it)
-        ActivityStarter.startApplication(context, it)
+        activityStarter.startApplication(it)
     }
 }
 
 @Composable
 fun AllApplicationsListPaged(
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
+    activityStarter: ActivityStarter = koinInject(),
     onSettingsClick: () -> Unit = { },
     onStatisticsClick: () -> Unit = { },
     onArrowClick: () -> Unit = { }
 ) {
     val state by userApplicationsViewModel.uiState
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         userApplicationsViewModel.loadAllApplications()
@@ -91,11 +92,15 @@ fun AllApplicationsListPaged(
         applications = applications,
         arrowView = { ArrowLeft(onArrowClick) },
         onSettingsClick = onSettingsClick,
-        onStatisticsClick = onStatisticsClick
-    ) {
-        userApplicationsViewModel.increaseClickCount(it)
-        ActivityStarter.startApplication(context, it)
-    }
+        onStatisticsClick = onStatisticsClick,
+        onAppClick = {
+            userApplicationsViewModel.increaseClickCount(it)
+            activityStarter.startApplication(it)
+        },
+        onAppLongClick = {
+            activityStarter.openSettings(it)
+        }
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -106,7 +111,8 @@ fun ApplicationsListPaged(
     arrowView: @Composable BoxScope.() -> Unit = {},
     onSettingsClick: (() -> Unit)? = null,
     onStatisticsClick: (() -> Unit)? = null,
-    onAppClick: (Application) -> Unit = { }
+    onAppClick: (Application) -> Unit = { },
+    onAppLongClick: (Application) -> Unit = { },
 ) {
     var pageSize by remember { mutableStateOf(10) }
 
@@ -120,7 +126,9 @@ fun ApplicationsListPaged(
 
         if (applications.isEmpty()) {
             Text(
-                modifier = Modifier.padding(64.dp).align(Alignment.Center),
+                modifier = Modifier
+                    .padding(64.dp)
+                    .align(Alignment.Center),
                 textAlign = TextAlign.Center,
                 text = "There's nothing, select favourite applications from settings."
             )
@@ -154,7 +162,10 @@ fun ApplicationsListPaged(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(start = 48.dp, end = 48.dp)
-                                .clickable { onAppClick(it) },
+                                .combinedClickable(
+                                    onClick = { onAppClick(it) },
+                                    onLongClick = { onAppLongClick(it) }
+                                ),
                             it
                         )
                     }

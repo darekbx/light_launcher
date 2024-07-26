@@ -66,6 +66,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.data.store)
 
+    implementation(libs.accompanist.drawablepainter)
+
     implementation(libs.compose.reordeable)
 
     implementation(libs.koin.android)

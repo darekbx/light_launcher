@@ -11,6 +11,7 @@ import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
 import com.darekbx.lightlauncher.repository.local.dto.ClickCountDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
+import com.darekbx.lightlauncher.system.BasePackageManager
 import com.darekbx.lightlauncher.system.model.Application
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
@@ -25,6 +26,7 @@ sealed class UserApplicationsUiState {
 
 class UserApplicationsViewModel(
     private val applicationsProvider: BaseApplicationsProvider,
+    private val packageManager: BasePackageManager,
     private val applicationDao: ApplicationDao,
     private val clickCountDao: ClickCountDao,
     private val ioDispatcher: CoroutineDispatcher
@@ -92,6 +94,7 @@ class UserApplicationsViewModel(
                             activityName = app.activityName,
                             packageName = app.packageName,
                             label = app.label,
+                            icon = app.icon,
                             order = -1,
                             isFromHome = app.packageName.contains(IS_HOME)
                         )
@@ -109,6 +112,7 @@ class UserApplicationsViewModel(
                 activityName = app.activityName,
                 packageName = app.packageName,
                 label = app.label,
+                icon = packageManager.getApplicationIcon(app.packageName),
                 order = app.order,
                 isFromHome = app.packageName.contains(IS_HOME)
             )

@@ -24,7 +24,7 @@ class ApplicationsProviderTest {
         }
         val packageManagerWrapper: PackageManagerWrapper = spyk(PackageManagerWrapper(packageManager)) {
             every { getApplicationLabel(any()) } answers { callOriginal() }
-            every { getApplicationIcon(any()) } answers { callOriginal() }
+            every { getApplicationIcon(any<ResolveInfo>()) } answers { callOriginal() }
         }
         val applicationsProvider = spyk(ApplicationsProvider(packageManagerWrapper)) {
             every { launcherIntent() } returns mockk()

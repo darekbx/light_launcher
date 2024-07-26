@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontFamily
 import com.darekbx.lightlauncher.R
 
 private val ColorScheme = darkColorScheme(
-    background = Color(22, 27, 30, 255),
+    background = Color.Black,
     onBackground = Color.White.copy(alpha = 0.7f),
 )
 

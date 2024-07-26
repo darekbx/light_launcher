@@ -14,4 +14,6 @@ interface BasePackageManager {
     fun getApplicationLabel(resolveInfo: ResolveInfo): String
 
     fun getApplicationIcon(resolveInfo: ResolveInfo): Drawable
+
+    fun getApplicationIcon(packageName: String): Drawable
 }

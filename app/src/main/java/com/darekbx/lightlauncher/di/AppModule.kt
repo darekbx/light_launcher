@@ -12,6 +12,7 @@ import com.darekbx.lightlauncher.repository.local.SettingsStore
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
 import com.darekbx.lightlauncher.repository.local.dao.NotificationDao
+import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.ApplicationsProvider
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
@@ -48,6 +49,7 @@ val appModule = module {
     single<BaseApplicationsProvider> { ApplicationsProvider(get()) }
     single { androidContext().dataStore }
     single { SettingsStore(get()) }
+    single { ActivityStarter(androidContext()) }
 }
 
 val viewModelModule = module {
@@ -66,6 +68,7 @@ val viewModelModule = module {
     }
     viewModel {
         UserApplicationsViewModel(
+            get(),
             get(),
             get(),
             get(),

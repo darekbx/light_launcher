@@ -18,4 +18,7 @@ class PackageManagerWrapper(private val packageManager: PackageManager) : BasePa
 
     override fun getApplicationIcon(resolveInfo: ResolveInfo) =
         resolveInfo.loadIcon(packageManager)
+
+    override fun getApplicationIcon(packageName: String) =
+        packageManager.getApplicationIcon(packageName)
 }

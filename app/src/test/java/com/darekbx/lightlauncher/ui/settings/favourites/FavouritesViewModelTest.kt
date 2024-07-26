@@ -82,8 +82,8 @@ class FavouritesViewModelTest {
     fun `loadFavouriteApplications fetches mapped item`() = runTest {
         // given
         coEvery { applicationsProvider.listInstalledApplications() } returns listOf(
-            Application("activity1", "com.test.app1", "Test app1", 0, false),
-            Application("activity2", "com.test.app2", "Test app2", 0, false)
+            Application("activity1", "com.test.app1", "Test app1", mockk(), 0, false),
+            Application("activity2", "com.test.app2", "Test app2", mockk(), 0, false)
         )
         coEvery { applicationDao.fetch() } returns listOf(
             ApplicationDto(1L, "activity1", "com.test.app1"),

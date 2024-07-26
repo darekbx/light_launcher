@@ -18,6 +18,7 @@ composeNavigation = "2.7.7"
 reordeable = "0.9.6"
 kotlinxCoroutinesTestVersion = "1.6.0"
 dataStore = "1.1.1"
+accompanist = "0.34.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,7 @@ androidx-compose-navigation = { group = "androidx.navigation", name = "navigatio
 compose-reordeable = { group = "org.burnoutcrew.composereorderable", name = "reorderable", version.ref = "reordeable" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
 data-store = { module = "androidx.datastore:datastore-preferences", version.ref = "dataStore" }
+accompanist-drawablepainter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

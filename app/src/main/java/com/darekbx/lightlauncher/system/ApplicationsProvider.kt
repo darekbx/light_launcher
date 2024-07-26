@@ -16,7 +16,8 @@ class ApplicationsProvider(
                 Application(
                     getActivityName(it),
                     getPackageName(it),
-                    packageManager.getApplicationLabel(it),
+                    loadAppLabel(it),
+                    loadAppIcon(it),
                     order = -1,
                     isFromHome = false
                 )
@@ -28,6 +29,12 @@ class ApplicationsProvider(
 
     fun getActivityName(resolveInfo: ResolveInfo): String =
         resolveInfo.activityInfo.name
+
+    fun loadAppIcon(resolveInfo: ResolveInfo) =
+        packageManager.getApplicationIcon(resolveInfo)
+
+    fun loadAppLabel(resolveInfo: ResolveInfo) =
+        packageManager.getApplicationLabel(resolveInfo)
 
     fun launcherIntent() =
         Intent(Intent.ACTION_MAIN).apply {

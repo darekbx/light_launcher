@@ -27,8 +27,8 @@ class StatisticsViewModelTest {
     fun `getClickCount returns mapped ClickCount`() = runTest {
         // Given
         val applications = listOf(
-            Application("Activity name 1", "com.test.app1", "Test app1", 0, false),
-            Application("Activity name 2", "com.test.app2", "Test app2", 0, false)
+            Application("Activity name 1", "com.test.app1", "Test app1", mockk(), 0, false),
+            Application("Activity name 2", "com.test.app2", "Test app2", mockk(), 0, false)
         )
         val clickCounts = listOf(
             ClickCountDto(null, "Activity name 1", 5),
