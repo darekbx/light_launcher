@@ -30,7 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -62,11 +62,15 @@ fun UserApplicationsListPaged(
 
     ApplicationsListPaged(
         applications = applications,
-        arrowView = { ArrowRight(onArrowClick) }
-    ) {
-        userApplicationsViewModel.increaseClickCount(it)
-        activityStarter.startApplication(it)
-    }
+        arrowView = { ArrowRight(onArrowClick) },
+        onAppClick = {
+            userApplicationsViewModel.increaseClickCount(it)
+            activityStarter.startApplication(it)
+        },
+        onAppLongClick = {
+            activityStarter.openSettings(it)
+        }
+    )
 }
 
 @Composable
@@ -114,7 +118,7 @@ fun ApplicationsListPaged(
     onAppClick: (Application) -> Unit = { },
     onAppLongClick: (Application) -> Unit = { },
 ) {
-    var pageSize by remember { mutableStateOf(10) }
+    var pageSize by remember { mutableIntStateOf(10) }
 
     LaunchedEffect(Unit) {
         settingsViewModel.load { _, pageSizeValue ->
