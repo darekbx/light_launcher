@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
+import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
 import com.darekbx.lightlauncher.repository.local.dto.ClickCountDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
@@ -36,9 +37,12 @@ class UserApplicationsViewModel(
         private val IS_HOME = "com.darekbx.home"
     }
 
+    private val removedApplications = mutableListOf<ApplicationDto>()
+
     val applicationsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             checkIfAppShouldBeRemoved(intent)
+            //restoreRemovedApplications(intent)
             when (intent.action) {
                 Intent.ACTION_PACKAGE_ADDED, Intent.ACTION_PACKAGE_REMOVED -> {
                     loadAllApplications()
@@ -47,11 +51,34 @@ class UserApplicationsViewModel(
         }
     }
 
-    private fun checkIfAppShouldBeRemoved(intent: Intent) {
-        if (intent.action == Intent.ACTION_PACKAGE_REMOVED) {
+    // TODO if flag EXTRA_REPLACING will be working, delete this code
+    /*private fun restoreRemovedApplications(intent: Intent) {
+        if (intent.action == Intent.ACTION_PACKAGE_ADDED) {
             intent.data?.schemeSpecificPart?.let { packageName ->
                 viewModelScope.launch {
                     withContext(ioDispatcher) {
+                        removedApplications
+                            .filter { it.packageName == packageName }
+                            .forEach { applicationDao.add(it) }
+                        removedApplications.removeAll { it.packageName == packageName }
+                    }
+                }
+            }
+        }
+    }*/
+
+    private fun checkIfAppShouldBeRemoved(intent: Intent) {
+        if (intent.action == Intent.ACTION_PACKAGE_REMOVED) {
+            intent.data?.schemeSpecificPart?.let { packageName ->
+                if (intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) {
+                    // Just updating the app, skip app removing
+                    return
+                }
+                viewModelScope.launch {
+                    withContext(ioDispatcher) {
+                        // Add removed apps to cache, they will be restored then this is an update action
+                        //removedApplications.addAll(
+                        //    applicationDao.fetch().filter { it.packageName == packageName })
                         applicationDao.delete(packageName)
                     }
                 }
