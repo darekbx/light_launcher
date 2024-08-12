@@ -197,8 +197,14 @@ fun ApplicationsListPaged(
             }
         }
 
-        PageIndicator(pagerState, pagesAlphabet)
-        NavigationArrows(pagerState, { arrowView() }, onSettingsClick, onStatisticsClick, onRefreshClick)
+        PageIndicator(pagerState, if (onSettingsClick != null) pagesAlphabet else emptyList())
+        NavigationArrows(
+            pagerState,
+            { arrowView() },
+            onSettingsClick,
+            onStatisticsClick,
+            onRefreshClick
+        )
     }
 }
 
@@ -283,19 +289,23 @@ private fun BoxScope.PageIndicator(pagerState: PagerState, pagesAlphabet: List<L
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        (0 until pagerState.pageCount).forEach { page ->
-            var text =""
-            pagesAlphabet[page].forEach {
-                text += "$it\n"
+        if (pagesAlphabet.isNotEmpty()) {
+            (0 until pagerState.pageCount).forEach { page ->
+                var text = ""
+                pagesAlphabet[page].forEach {
+                    text += "$it\n"
+                }
+                Text(
+                    text = text,
+                    fontSize = 10.sp,
+                    textAlign = TextAlign.Center,
+                    color =
+                    if (page == pagerState.currentPage) MaterialTheme.colorScheme.onBackground
+                    else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4F),
+                    lineHeight = 13.sp,
+                    fontWeight = if (page == pagerState.currentPage) FontWeight.ExtraBold else null
+                )
             }
-            Text(
-                text = text,
-                fontSize = 10.sp,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground,
-                lineHeight = 13.sp,
-                fontWeight = if (page == pagerState.currentPage) FontWeight.ExtraBold else null
-            )
         }
 
         val backgroundModifier =
