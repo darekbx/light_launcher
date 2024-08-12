@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,8 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.darekbx.lightlauncher.R
 import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.model.Application
@@ -97,6 +100,7 @@ fun AllApplicationsListPaged(
         arrowView = { ArrowLeft(onArrowClick) },
         onSettingsClick = onSettingsClick,
         onStatisticsClick = onStatisticsClick,
+        onRefreshClick = { userApplicationsViewModel.loadAllApplications() },
         onAppClick = {
             userApplicationsViewModel.increaseClickCount(it)
             activityStarter.startApplication(it)
@@ -115,10 +119,18 @@ fun ApplicationsListPaged(
     arrowView: @Composable BoxScope.() -> Unit = {},
     onSettingsClick: (() -> Unit)? = null,
     onStatisticsClick: (() -> Unit)? = null,
+    onRefreshClick: (() -> Unit)? = null,
     onAppClick: (Application) -> Unit = { },
     onAppLongClick: (Application) -> Unit = { },
 ) {
     var pageSize by remember { mutableIntStateOf(10) }
+
+    val pagesAlphabet = applications
+        .chunked(pageSize)
+        .mapIndexed { index, chunk ->
+            val firstLetters = chunk.map { it.label.first().uppercaseChar() }.distinct().sorted()
+            firstLetters
+        }
 
     LaunchedEffect(Unit) {
         settingsViewModel.load { _, pageSizeValue ->
@@ -185,8 +197,8 @@ fun ApplicationsListPaged(
             }
         }
 
-        PageIndicator(pagerState)
-        NavigationArrows(pagerState, { arrowView() }, onSettingsClick, onStatisticsClick)
+        PageIndicator(pagerState, pagesAlphabet)
+        NavigationArrows(pagerState, { arrowView() }, onSettingsClick, onStatisticsClick, onRefreshClick)
     }
 }
 
@@ -196,13 +208,23 @@ private fun BoxScope.NavigationArrows(
     pagerState: PagerState,
     arrowView: @Composable () -> Unit,
     onSettingsClick: (() -> Unit)? = null,
-    onStatisticsClick: (() -> Unit)? = null
+    onStatisticsClick: (() -> Unit)? = null,
+    onRefreshClick: (() -> Unit)? = null,
 ) {
     val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier.align(Alignment.BottomEnd),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        onRefreshClick?.let {
+            Icon(
+                modifier = Modifier
+                    .clickable { onRefreshClick() }
+                    .padding(24.dp),
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "refresh"
+            )
+        }
         onSettingsClick?.let {
             Icon(
                 modifier = Modifier
@@ -254,13 +276,28 @@ private fun BoxScope.NavigationArrows(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun BoxScope.PageIndicator(pagerState: PagerState) {
+private fun BoxScope.PageIndicator(pagerState: PagerState, pagesAlphabet: List<List<Char>>) {
     Column(
         modifier = Modifier
             .align(Alignment.BottomStart)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        (0 until pagerState.pageCount).forEach { page ->
+            var text =""
+            pagesAlphabet[page].forEach {
+                text += "$it\n"
+            }
+            Text(
+                text = text,
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground,
+                lineHeight = 13.sp,
+                fontWeight = if (page == pagerState.currentPage) FontWeight.ExtraBold else null
+            )
+        }
+
         val backgroundModifier =
             Modifier.background(MaterialTheme.colorScheme.onBackground, CircleShape)
         (0 until pagerState.pageCount).forEach { index ->

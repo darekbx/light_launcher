@@ -57,7 +57,7 @@ import org.koin.compose.koinInject
 fun UserApplicationsScreen(
     settingsViewModel: SettingsViewModel = koinViewModel(),
     onSettingsClick: () -> Unit,
-    onStatisticsClick: () -> Unit
+    onStatisticsClick: () -> Unit,
 ) {
     var isPaged by remember { mutableStateOf(true) }
 
@@ -251,7 +251,9 @@ fun UserApplicationView(
     ) {
         if (showAppIcon) {
             Icon(
-                modifier = Modifier.size(32.dp).padding(end = 8.dp),
+                modifier = Modifier
+                    .size(32.dp)
+                    .padding(end = 8.dp),
                 painter = rememberDrawablePainter(application.icon),
                 contentDescription = application.label
             )

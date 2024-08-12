@@ -106,6 +106,7 @@ class UserApplicationsViewModel(
 
     fun loadAllApplications() {
         viewModelScope.launch {
+            _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 delay(250)
                 val installedApps = applicationsProvider.listInstalledApplications()
