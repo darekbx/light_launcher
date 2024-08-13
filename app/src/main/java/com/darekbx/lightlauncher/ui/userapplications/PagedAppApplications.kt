@@ -1,5 +1,6 @@
 package com.darekbx.lightlauncher.ui.userapplications
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -105,9 +106,8 @@ fun AllApplicationsListPaged(
             userApplicationsViewModel.increaseClickCount(it)
             activityStarter.startApplication(it)
         },
-        onAppLongClick = {
-            activityStarter.openSettings(it)
-        }
+        onAppLongClick = { activityStarter.openSettings(it) },
+        shouldGoBack = { onArrowClick() }
     )
 }
 
@@ -122,7 +122,9 @@ fun ApplicationsListPaged(
     onRefreshClick: (() -> Unit)? = null,
     onAppClick: (Application) -> Unit = { },
     onAppLongClick: (Application) -> Unit = { },
+    shouldGoBack: () -> Unit = { }
 ) {
+    val coroutineScope = rememberCoroutineScope()
     var pageSize by remember { mutableIntStateOf(10) }
 
     val pagesAlphabet = applications
@@ -152,6 +154,17 @@ fun ApplicationsListPaged(
 
         val pages = ceil(applications.size / pageSize.toFloat()).toInt()
         val pagerState = rememberPagerState(pageCount = { pages })
+
+        BackHandler {
+            if (pagerState.canScrollBackward) {
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                }
+            } else {
+                shouldGoBack()
+            }
+        }
+
         VerticalPager(state = pagerState) { page ->
             val items = applications.subList(
                 page * pageSize,
