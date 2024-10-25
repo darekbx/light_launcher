@@ -97,36 +97,6 @@ fun UserApplicationsListPaged(
 }
 
 @Composable
-fun UserApplicationsListCloud(
-    userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
-    activityStarter: ActivityStarter = koinInject(),
-    onArrowClick: () -> Unit = { }
-) {
-    val state by userApplicationsViewModel.uiState
-
-    LaunchedEffect(Unit) {
-        userApplicationsViewModel.loadApplications()
-    }
-
-    if (state is UserApplicationsUiState.Idle) {
-        return Loading()
-    }
-
-    val applications = (state as UserApplicationsUiState.Done).applications
-    ApplicationsListCloud(
-        applications = applications,
-        arrowView = { ArrowRight(onArrowClick) },
-        onAppClick = {
-            userApplicationsViewModel.increaseClickCount(it)
-            activityStarter.startApplication(it)
-        },
-        onAppLongClick = {
-            activityStarter.openSettings(it)
-        }
-    )
-}
-
-@Composable
 fun AllApplicationsListPaged(
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
     activityStarter: ActivityStarter = koinInject(),
@@ -160,94 +130,6 @@ fun AllApplicationsListPaged(
     )
 }
 
-@Composable
-fun AllApplicationsListCloud(
-    userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
-    activityStarter: ActivityStarter = koinInject(),
-    onSettingsClick: () -> Unit = { },
-    onStatisticsClick: () -> Unit = { },
-    onArrowClick: () -> Unit = { }
-) {
-    val state by userApplicationsViewModel.uiState
-
-    LaunchedEffect(Unit) {
-        userApplicationsViewModel.loadAllApplications()
-    }
-
-    if (state is UserApplicationsUiState.Idle) {
-        return Loading()
-    }
-
-    val applications = (state as UserApplicationsUiState.Done).applications
-    ApplicationsListCloud(
-        applications = applications,
-        arrowView = { ArrowLeft(onArrowClick) },
-        onSettingsClick = onSettingsClick,
-        onStatisticsClick = onStatisticsClick,
-        onRefreshClick = { userApplicationsViewModel.loadAllApplications() },
-        onAppClick = {
-            userApplicationsViewModel.increaseClickCount(it)
-            activityStarter.startApplication(it)
-        },
-        onAppLongClick = { activityStarter.openSettings(it) },
-        shouldGoBack = { onArrowClick() }
-    )
-}
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
-@Composable
-fun ApplicationsListCloud(
-    applications: List<Application>,
-    arrowView: @Composable BoxScope.() -> Unit = {},
-    onSettingsClick: (() -> Unit)? = null,
-    onStatisticsClick: (() -> Unit)? = null,
-    onRefreshClick: (() -> Unit)? = null,
-    onAppClick: (Application) -> Unit = { },
-    onAppLongClick: (Application) -> Unit = { },
-    shouldGoBack: () -> Unit = { }
-) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (applications.isEmpty()) {
-            Text(
-                modifier = Modifier
-                    .padding(64.dp)
-                    .align(Alignment.Center),
-                textAlign = TextAlign.Center,
-                text = "There's nothing, select favourite applications from settings."
-            )
-        }
-
-        BackHandler {
-            shouldGoBack()
-        }
-
-        FlowRow(
-            modifier = Modifier.fillMaxSize().padding(start = 48.dp, end = 48.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalArrangement = Arrangement.Center
-        ) {
-            applications.forEach {
-                UserApplicationView(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .combinedClickable(
-                            onClick = { onAppClick(it) },
-                            onLongClick = { onAppLongClick(it) }
-                        ),
-                    it
-                )
-            }
-        }
-
-        NavigationArrows(
-            pagerState = null,
-            { arrowView() },
-            onSettingsClick,
-            onStatisticsClick,
-            onRefreshClick
-        )
-    }
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -362,7 +244,7 @@ fun ApplicationsListPaged(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun BoxScope.NavigationArrows(
+fun BoxScope.NavigationArrows(
     pagerState: PagerState? = null,
     arrowView: @Composable () -> Unit,
     onSettingsClick: (() -> Unit)? = null,
@@ -477,7 +359,7 @@ private fun BoxScope.PageIndicator(pagerState: PagerState, pagesAlphabet: List<L
 }
 
 @Composable
-private fun ArrowRight(onArrowClick: () -> Unit) {
+fun ArrowRight(onArrowClick: () -> Unit) {
     Icon(
         modifier = Modifier
             .clickable { onArrowClick() }
@@ -488,7 +370,7 @@ private fun ArrowRight(onArrowClick: () -> Unit) {
 }
 
 @Composable
-private fun ArrowLeft(onArrowClick: () -> Unit) {
+fun ArrowLeft(onArrowClick: () -> Unit) {
     Icon(
         modifier = Modifier
             .clickable { onArrowClick() }
@@ -529,7 +411,7 @@ fun UserApplicationsListPagedPreview() {
                         fontWeight = FontWeight(Random.nextInt(100, 900)),
                         textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
                         fontFamily = fontFamily,
-                        fontSize = 20.sp
+                        fontSize = 18.sp
                     )
                 }
 
