@@ -90,11 +90,13 @@ fun SettingsScreen(
 @Composable
 private fun UiSettings(settingsViewModel: SettingsViewModel = koinViewModel()) {
     var usePages by remember { mutableStateOf(true) }
+    var useCloud by remember { mutableStateOf(false) }
     var pageSize by remember { mutableStateOf(PageSize.MEDIUM) }
 
     LaunchedEffect(Unit) {
-        settingsViewModel.load { usePagesValue, pageSizeValue ->
+        settingsViewModel.load { usePagesValue, useCloudValue, pageSizeValue ->
             usePages = usePagesValue
+            useCloud = useCloudValue
             pageSize = PageSize.entries
                 .find { pageSize -> pageSize.value == pageSizeValue }
                 ?: PageSize.MEDIUM
@@ -112,7 +114,30 @@ private fun UiSettings(settingsViewModel: SettingsViewModel = koinViewModel()) {
         checked = usePages,
         onCheckedChange = {
             usePages = it
+            useCloud = false
+            settingsViewModel.setUseCloud(false)
             settingsViewModel.setUsePages(it)
+        },
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = MaterialTheme.colorScheme.background,
+            checkedTrackColor = MaterialTheme.colorScheme.onBackground,
+        )
+    )
+
+    Text(
+        modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
+        text = "use cloud for lists",
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onBackground,
+        fontFamily = fontFamily
+    )
+    Switch(
+        checked = useCloud,
+        onCheckedChange = {
+            useCloud = it
+            usePages = false
+            settingsViewModel.setUsePages(false)
+            settingsViewModel.setUseCloud(it)
         },
         colors = SwitchDefaults.colors(
             checkedThumbColor = MaterialTheme.colorScheme.background,

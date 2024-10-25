@@ -6,9 +6,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -38,21 +40,31 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.darekbx.lightlauncher.R
+import com.darekbx.lightlauncher.di.appModule
+import com.darekbx.lightlauncher.di.viewModelModule
 import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
+import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
+import com.darekbx.lightlauncher.ui.theme.fontFamily
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import kotlin.math.ceil
 import kotlin.math.min
+import kotlin.random.Random
 
 @Composable
 fun UserApplicationsListPaged(
@@ -60,11 +72,48 @@ fun UserApplicationsListPaged(
     activityStarter: ActivityStarter = koinInject(),
     onArrowClick: () -> Unit = { }
 ) {
-    val applications by userApplicationsViewModel
-        .loadApplications()
-        .collectAsState(initial = emptyList())
+    val state by userApplicationsViewModel.uiState
 
+    LaunchedEffect(Unit) {
+        userApplicationsViewModel.loadApplications()
+    }
+
+    if (state is UserApplicationsUiState.Idle) {
+        return Loading()
+    }
+
+    val applications = (state as UserApplicationsUiState.Done).applications
     ApplicationsListPaged(
+        applications = applications,
+        arrowView = { ArrowRight(onArrowClick) },
+        onAppClick = {
+            userApplicationsViewModel.increaseClickCount(it)
+            activityStarter.startApplication(it)
+        },
+        onAppLongClick = {
+            activityStarter.openSettings(it)
+        }
+    )
+}
+
+@Composable
+fun UserApplicationsListCloud(
+    userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
+    activityStarter: ActivityStarter = koinInject(),
+    onArrowClick: () -> Unit = { }
+) {
+    val state by userApplicationsViewModel.uiState
+
+    LaunchedEffect(Unit) {
+        userApplicationsViewModel.loadApplications()
+    }
+
+    if (state is UserApplicationsUiState.Idle) {
+        return Loading()
+    }
+
+    val applications = (state as UserApplicationsUiState.Done).applications
+    ApplicationsListCloud(
         applications = applications,
         arrowView = { ArrowRight(onArrowClick) },
         onAppClick = {
@@ -111,6 +160,95 @@ fun AllApplicationsListPaged(
     )
 }
 
+@Composable
+fun AllApplicationsListCloud(
+    userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
+    activityStarter: ActivityStarter = koinInject(),
+    onSettingsClick: () -> Unit = { },
+    onStatisticsClick: () -> Unit = { },
+    onArrowClick: () -> Unit = { }
+) {
+    val state by userApplicationsViewModel.uiState
+
+    LaunchedEffect(Unit) {
+        userApplicationsViewModel.loadAllApplications()
+    }
+
+    if (state is UserApplicationsUiState.Idle) {
+        return Loading()
+    }
+
+    val applications = (state as UserApplicationsUiState.Done).applications
+    ApplicationsListCloud(
+        applications = applications,
+        arrowView = { ArrowLeft(onArrowClick) },
+        onSettingsClick = onSettingsClick,
+        onStatisticsClick = onStatisticsClick,
+        onRefreshClick = { userApplicationsViewModel.loadAllApplications() },
+        onAppClick = {
+            userApplicationsViewModel.increaseClickCount(it)
+            activityStarter.startApplication(it)
+        },
+        onAppLongClick = { activityStarter.openSettings(it) },
+        shouldGoBack = { onArrowClick() }
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@Composable
+fun ApplicationsListCloud(
+    applications: List<Application>,
+    arrowView: @Composable BoxScope.() -> Unit = {},
+    onSettingsClick: (() -> Unit)? = null,
+    onStatisticsClick: (() -> Unit)? = null,
+    onRefreshClick: (() -> Unit)? = null,
+    onAppClick: (Application) -> Unit = { },
+    onAppLongClick: (Application) -> Unit = { },
+    shouldGoBack: () -> Unit = { }
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (applications.isEmpty()) {
+            Text(
+                modifier = Modifier
+                    .padding(64.dp)
+                    .align(Alignment.Center),
+                textAlign = TextAlign.Center,
+                text = "There's nothing, select favourite applications from settings."
+            )
+        }
+
+        BackHandler {
+            shouldGoBack()
+        }
+
+        FlowRow(
+            modifier = Modifier.fillMaxSize().padding(start = 48.dp, end = 48.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Center
+        ) {
+            applications.forEach {
+                UserApplicationView(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .combinedClickable(
+                            onClick = { onAppClick(it) },
+                            onLongClick = { onAppLongClick(it) }
+                        ),
+                    it
+                )
+            }
+        }
+
+        NavigationArrows(
+            pagerState = null,
+            { arrowView() },
+            onSettingsClick,
+            onStatisticsClick,
+            onRefreshClick
+        )
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ApplicationsListPaged(
@@ -125,7 +263,7 @@ fun ApplicationsListPaged(
     shouldGoBack: () -> Unit = { }
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var pageSize by remember { mutableIntStateOf(10) }
+    var pageSize by remember { mutableIntStateOf(12) }
 
     val pagesAlphabet = applications
         .chunked(pageSize)
@@ -135,7 +273,7 @@ fun ApplicationsListPaged(
         }
 
     LaunchedEffect(Unit) {
-        settingsViewModel.load { _, pageSizeValue ->
+        settingsViewModel.load { _, _, pageSizeValue ->
             pageSize = pageSizeValue
         }
     }
@@ -191,6 +329,7 @@ fun ApplicationsListPaged(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(start = 48.dp, end = 48.dp)
+                                .padding(top = 12.dp, bottom = 12.dp)
                                 .combinedClickable(
                                     onClick = { onAppClick(it) },
                                     onLongClick = { onAppLongClick(it) }
@@ -224,7 +363,7 @@ fun ApplicationsListPaged(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BoxScope.NavigationArrows(
-    pagerState: PagerState,
+    pagerState: PagerState? = null,
     arrowView: @Composable () -> Unit,
     onSettingsClick: (() -> Unit)? = null,
     onStatisticsClick: (() -> Unit)? = null,
@@ -263,32 +402,34 @@ private fun BoxScope.NavigationArrows(
             )
         }
         arrowView()
-        Icon(
-            modifier = Modifier
-                .clickable {
-                    scope.launch {
-                        if (pagerState.currentPage > 0) {
-                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+        if (pagerState != null) {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        scope.launch {
+                            if (pagerState.currentPage > 0) {
+                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                            }
                         }
                     }
-                }
-                .padding(24.dp),
-            imageVector = Icons.Default.KeyboardArrowUp,
-            contentDescription = "up"
-        )
-        Icon(
-            modifier = Modifier
-                .clickable {
-                    scope.launch {
-                        if (pagerState.currentPage < pagerState.pageCount - 1) {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                    .padding(24.dp),
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = "up"
+            )
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        scope.launch {
+                            if (pagerState.currentPage < pagerState.pageCount - 1) {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
                         }
                     }
-                }
-                .padding(24.dp),
-            imageVector = Icons.Default.KeyboardArrowDown,
-            contentDescription = "down"
-        )
+                    .padding(24.dp),
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = "down"
+            )
+        }
     }
 
 }
@@ -355,4 +496,44 @@ private fun ArrowLeft(onArrowClick: () -> Unit) {
         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
         contentDescription = "back"
     )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Preview(device = Devices.PIXEL_6A, showSystemUi = true)
+@Composable
+fun UserApplicationsListPagedPreview() {
+    val names = listOf(
+        "70mai", "Alior Mobile", "Allegro", "Assistant", "Authenticator", "Backup",
+        "Books", "Calculator", "Calendar", "Camera", "Chrome", "Clock",
+        "Phone", "Photos", "Google Earth", "Google Pay", "Google Play", "Google Play Movies",
+        "Contacts", "Drive", "Duo", "Files", "Find Device", "Gmail",
+        "Google", "Keep", "Maps", "Messages", "Music", "News",
+        "Phone", "Photos", "Google Earth", "Google Pay", "Google Play", "Google Play Movies",
+        "Google Play Music", "Play Store", "Settings", "Spotify", "Translate", "YouTube",
+        "Zoom", "Google Earth", "Google Pay", "Google Play", "Google Play Movies", "Google Play Music"
+    )
+    val applications = names.map { Application("", "", it, null, 0, false) }
+    LightLauncherTheme {
+        KoinApplication(application = { modules(appModule, viewModelModule) }) {
+            FlowRow(
+                modifier = Modifier.fillMaxSize().background(Color.Black).padding(start = 48.dp, end = 48.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Center
+            )  {
+                applications.forEach { application ->
+                    Text(
+                        modifier = Modifier.padding(8.dp),
+                        text = application.label,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight(Random.nextInt(100, 900)),
+                        textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
+                        fontFamily = fontFamily,
+                        fontSize = 20.sp
+                    )
+                }
+
+            }
+        }
+    }
 }

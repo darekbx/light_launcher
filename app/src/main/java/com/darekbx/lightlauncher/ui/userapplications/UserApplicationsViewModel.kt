@@ -16,7 +16,6 @@ import com.darekbx.lightlauncher.system.BasePackageManager
 import com.darekbx.lightlauncher.system.model.Application
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -109,6 +108,7 @@ class UserApplicationsViewModel(
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 delay(250)
+                val maxCount = clickCountDao.getMaxCount()?.count ?: 0
                 val installedApps = applicationsProvider.listInstalledApplications()
                 val savedApps = applicationDao.fetch()
                 val applications = installedApps
@@ -118,6 +118,7 @@ class UserApplicationsViewModel(
                         }
                     }
                     .map { app ->
+                        val clickCount = clickCountDao.get(app.activityName)?.count ?: 0
                         Application(
                             activityName = app.activityName,
                             packageName = app.packageName,
@@ -125,26 +126,60 @@ class UserApplicationsViewModel(
                             icon = app.icon,
                             order = -1,
                             isFromHome = app.packageName.contains(IS_HOME)
-                        )
+                        ).apply {
+                            fontWeight = calculateFontWeight(clickCount, maxCount)
+                            scale = mapToScale(fontWeight)
+                        }
                     }
-                    .sortedBy { it.label }
+                    .sortedBy { it.label.lowercase() }
                 _uiState.value = UserApplicationsUiState.Done(applications)
             }
         }
     }
 
-    fun loadApplications() = flow {
-        val savedApps = applicationDao.fetch()
-        val applications = savedApps.map { app ->
-            Application(
-                activityName = app.activityName,
-                packageName = app.packageName,
-                label = app.label,
-                icon = packageManager.getApplicationIcon(app.packageName),
-                order = app.order,
-                isFromHome = app.packageName.contains(IS_HOME)
-            )
+    fun loadApplications() {
+        viewModelScope.launch {
+            _uiState.value = UserApplicationsUiState.Idle
+            withContext(ioDispatcher) {
+                val maxCount = clickCountDao.getMaxCount()?.count ?: 0
+                val savedApps = applicationDao.fetch()
+                val applications = savedApps.map { app ->
+                    val clickCount = clickCountDao.get(app.activityName)?.count ?: 0
+                    Application(
+                        activityName = app.activityName,
+                        packageName = app.packageName,
+                        label = app.label,
+                        icon = packageManager.getApplicationIcon(app.packageName),
+                        order = app.order,
+                        isFromHome = app.packageName.contains(IS_HOME)
+                    ).apply {
+                        fontWeight = calculateFontWeight(clickCount, maxCount)
+                        scale = mapToScale(fontWeight)
+                    }
+                }
+                _uiState.value = UserApplicationsUiState.Done(applications)
+            }
         }
-        emit(applications)
+    }
+
+    private fun calculateFontWeight(clickCount: Int, maxClicks: Int): Int {
+        val minWeight = 1
+        val maxWeight = 1000
+        if (maxClicks == 0) {
+            return 400 // Default font weight
+        }
+        val normalizedClickCount = clickCount.coerceAtMost(maxClicks)
+        return minWeight + ((maxWeight - minWeight) * normalizedClickCount / maxClicks)
+    }
+
+    private fun mapToScale(
+        value: Int,
+        minInput: Int = 1,
+        maxInput: Int = 1000,
+        minScale: Float = 0.8F,
+        maxScale: Float = 1.3F
+    ): Float {
+        val clampedValue = value.coerceIn(minInput, maxInput)
+        return minScale + (maxScale - minScale) * (clampedValue - minInput) / (maxInput - minInput)
     }
 }

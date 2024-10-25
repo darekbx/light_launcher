@@ -59,7 +59,7 @@ fun ApplicationsOrderList(
 ) {
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
+            //.background(MaterialTheme.colorScheme.background)
             .fillMaxWidth()
             .padding(32.dp)
     ) {

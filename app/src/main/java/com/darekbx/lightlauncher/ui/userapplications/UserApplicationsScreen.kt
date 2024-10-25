@@ -35,12 +35,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.darekbx.lightlauncher.R
 import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.model.Application
@@ -60,10 +62,12 @@ fun UserApplicationsScreen(
     onStatisticsClick: () -> Unit,
 ) {
     var isPaged by remember { mutableStateOf(true) }
+    var isCloud by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        settingsViewModel.load { usePages, _ ->
+        settingsViewModel.load { usePages, useCloud, _ ->
             isPaged = usePages
+            isCloud = useCloud
         }
     }
 
@@ -73,7 +77,11 @@ fun UserApplicationsScreen(
     HorizontalPager(modifier = Modifier.fillMaxSize(), state = pagerState) { page ->
         when (page) {
             0 -> {
-                if (isPaged) {
+                if (isCloud) {
+                    UserApplicationsListCloud(
+                        onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                    )
+                } else if (isPaged) {
                     UserApplicationsListPaged(
                         onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
                     )
@@ -85,7 +93,13 @@ fun UserApplicationsScreen(
             }
 
             1 -> {
-                if (isPaged) {
+                if (isCloud) {
+                    AllApplicationsListCloud(
+                        onSettingsClick = onSettingsClick,
+                        onStatisticsClick = onStatisticsClick,
+                        onArrowClick = { scope.launch { pagerState.animateScrollToPage(0) } }
+                    )
+                } else if (isPaged) {
                     AllApplicationsListPaged(
                         onSettingsClick = onSettingsClick,
                         onStatisticsClick = onStatisticsClick,
@@ -137,6 +151,7 @@ fun AllApplicationsList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 48.dp, end = 48.dp)
+                        .padding(top = 12.dp, bottom = 12.dp)
                         .combinedClickable(
                             onClick = {
                                 userApplicationsViewModel.increaseClickCount(item)
@@ -187,14 +202,17 @@ fun UserApplicationsList(
     activityStarter: ActivityStarter = koinInject(),
     onArrowClick: () -> Unit = { }
 ) {
-    val applications by userApplicationsViewModel
-        .loadApplications()
-        .collectAsState(initial = emptyList())
+    val state by userApplicationsViewModel.uiState
 
-    if (applications.isEmpty()) {
+    LaunchedEffect(Unit) {
+        userApplicationsViewModel.loadApplications()
+    }
+
+    if (state is UserApplicationsUiState.Idle) {
         return Loading()
     }
 
+    val applications = (state as UserApplicationsUiState.Done).applications
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -207,6 +225,7 @@ fun UserApplicationsList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 48.dp, end = 48.dp)
+                        .padding(top = 12.dp, bottom = 12.dp)
                         .combinedClickable(
                             onClick = {
                                 userApplicationsViewModel.increaseClickCount(item)
@@ -243,8 +262,7 @@ fun UserApplicationView(
         .collectAsState(initial = emptyList())
     Row(
         modifier
-            .fillMaxWidth()
-            .padding(top = 12.dp, bottom = 12.dp)
+            .scale(application.scale)
             .semantics { testTag = "favourite_application_view" },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -260,12 +278,14 @@ fun UserApplicationView(
         }
 
         Text(
+            modifier = Modifier,
             text = application.label,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight(application.fontWeight),
             textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
-            fontFamily = fontFamily
+            fontFamily = fontFamily,
+            fontSize = 20.sp
         )
 
         if (notifications.any { it.packageName == application.packageName }) {
@@ -278,3 +298,4 @@ fun UserApplicationView(
         }
     }
 }
+

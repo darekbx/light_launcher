@@ -17,6 +17,9 @@ interface ClickCountDao {
     @Query("SELECT * FROM click_count WHERE activity_name = :activityName")
     suspend fun get(activityName: String): ClickCountDto?
 
+    @Query("SELECT * FROM click_count ORDER BY count DESC LIMIT 1")
+    suspend fun getMaxCount(): ClickCountDto?
+
     @Query("""
 UPDATE click_count
 SET count = (SELECT count FROM click_count WHERE activity_name = :activityName) + 1

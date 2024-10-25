@@ -17,7 +17,7 @@ class StatisticsViewModel(
         emit(clickCounts.mapNotNull { clickCountDto ->
             applications
                 .find { it.activityName == clickCountDto.activityName }
-                ?.let { application ->  ClickCount(application.label, clickCountDto.count) }
+                ?.let { application -> ClickCount(application.label, clickCountDto.count) }
         })
     }
 }
