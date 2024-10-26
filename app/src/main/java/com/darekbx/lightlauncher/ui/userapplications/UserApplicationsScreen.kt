@@ -74,7 +74,11 @@ fun UserApplicationsScreen(
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
 
-    HorizontalPager(modifier = Modifier.fillMaxSize(), state = pagerState) { page ->
+    HorizontalPager(
+        modifier = Modifier.fillMaxSize(),
+        userScrollEnabled = false,
+        state = pagerState
+    ) { page ->
         when (page) {
             0 -> {
                 if (isCloud) {
@@ -285,7 +289,7 @@ fun UserApplicationView(
             fontWeight = FontWeight(application.fontWeight),
             textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             fontFamily = fontFamily,
-            fontSize = 20.sp
+            fontSize = 23.sp
         )
 
         if (notifications.any { it.packageName == application.packageName }) {

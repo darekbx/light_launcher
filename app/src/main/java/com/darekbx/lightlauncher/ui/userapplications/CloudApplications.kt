@@ -125,14 +125,14 @@ fun ApplicationsListCloud(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 48.dp, end = 48.dp),
+                .padding(start = 40.dp, end = 40.dp),
             horizontalArrangement = Arrangement.Center,
             verticalArrangement = Arrangement.Center
         ) {
             applications.forEach {
                 UserApplicationView(
                     modifier = Modifier
-                        .padding(6.dp)
+                        .padding(start = 4.dp, end = 4.dp, bottom = 8.dp, top = 8.dp)
                         .combinedClickable(
                             onClick = { onAppClick(it) },
                             onLongClick = { onAppLongClick(it) }

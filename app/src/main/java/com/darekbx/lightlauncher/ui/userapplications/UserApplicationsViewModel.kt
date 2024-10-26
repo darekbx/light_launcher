@@ -108,7 +108,7 @@ class UserApplicationsViewModel(
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 delay(250)
-                val maxCount = clickCountDao.getMaxCount()?.count ?: 0
+                val maxCount = getMaxCount()
                 val installedApps = applicationsProvider.listInstalledApplications()
                 val savedApps = applicationDao.fetch()
                 val applications = installedApps
@@ -141,7 +141,7 @@ class UserApplicationsViewModel(
         viewModelScope.launch {
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
-                val maxCount = clickCountDao.getMaxCount()?.count ?: 0
+                val maxCount = getMaxCount()
                 val savedApps = applicationDao.fetch()
                 val applications = savedApps.map { app ->
                     val clickCount = clickCountDao.get(app.activityName)?.count ?: 0
@@ -162,6 +162,14 @@ class UserApplicationsViewModel(
         }
     }
 
+    private suspend fun getMaxCount(): Int {
+        val count = clickCountDao.getMaxCount()?.count ?: 0
+        if (count > 800) {
+            return (count + 0.7).toInt()
+        }
+        return count
+    }
+
     private fun calculateFontWeight(clickCount: Int, maxClicks: Int): Int {
         val minWeight = 1
         val maxWeight = 1000
@@ -176,8 +184,8 @@ class UserApplicationsViewModel(
         value: Int,
         minInput: Int = 1,
         maxInput: Int = 1000,
-        minScale: Float = 0.8F,
-        maxScale: Float = 1.3F
+        minScale: Float = 0.7F,
+        maxScale: Float = 1.4F
     ): Float {
         val clampedValue = value.coerceIn(minInput, maxInput)
         return minScale + (maxScale - minScale) * (clampedValue - minInput) / (maxInput - minInput)
