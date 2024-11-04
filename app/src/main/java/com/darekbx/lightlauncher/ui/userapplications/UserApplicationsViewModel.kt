@@ -178,6 +178,14 @@ class UserApplicationsViewModel(
         }
     }
 
+    private suspend fun getMaxCount(): Int {
+        val count = clickCountDao.getMaxCount()?.count ?: 0
+        if (count > 400) {
+            return (count + 0.7).toInt()
+        }
+        return count
+    }
+
     private fun calculateFontWeight(clickCount: Int, maxClicks: Int): Int {
         val minWeight = 1
         val maxWeight = 1000
@@ -192,8 +200,8 @@ class UserApplicationsViewModel(
         value: Int,
         minInput: Int = 1,
         maxInput: Int = 1000,
-        minScale: Float = 0.8F,
-        maxScale: Float = 1.3F
+        minScale: Float = 0.7F,
+        maxScale: Float = 1.4F
     ): Float {
         val clampedValue = value.coerceIn(minInput, maxInput)
         return minScale + (maxScale - minScale) * (clampedValue - minInput) / (maxInput - minInput)
