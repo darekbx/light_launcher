@@ -111,14 +111,9 @@ class UserApplicationsViewModel(
             withContext(ioDispatcher) {
                 delay(250)
                 val savedApps = applicationDao.fetch()
-                val maxCount = clickCountDao.getMaxCount()
-                    .fastFilter { clickCount->
-                        savedApps.fastAny { application ->
-                            application.activityName != clickCount.activityName
-                        }
-                    }
-                    .maxBy { it.count }
-                    .count
+                var maxCount = getMaxCount(savedApps) { application, clickCount ->
+                    application.activityName != clickCount.activityName
+                }
                 val installedApps = applicationsProvider.listInstalledApplications()
                 val applications = installedApps
                     .filter { installedApp ->
@@ -151,14 +146,9 @@ class UserApplicationsViewModel(
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 val savedApps = applicationDao.fetch()
-                val maxCount = clickCountDao.getMaxCount()
-                    .fastFilter { clickCount->
-                        savedApps.fastAny { application ->
-                            application.activityName == clickCount.activityName
-                        }
-                    }
-                    .maxBy { it.count }
-                    .count
+                var maxCount = getMaxCount(savedApps) { application, clickCount ->
+                    application.activityName == clickCount.activityName
+                }
                 val applications = savedApps.map { app ->
                     val clickCount = clickCountDao.get(app.activityName)?.count ?: 0
                     Application(
@@ -178,12 +168,22 @@ class UserApplicationsViewModel(
         }
     }
 
-    private suspend fun getMaxCount(): Int {
-        val count = clickCountDao.getMaxCount()?.count ?: 0
-        if (count > 400) {
-            return (count + 0.7).toInt()
+    private suspend fun getMaxCount(
+        savedApps: List<ApplicationDto>,
+        condition: (ApplicationDto, ClickCountDto) -> Boolean
+    ): Int {
+        var maxCount = clickCountDao.getMaxCount()
+            .fastFilter { clickCount ->
+                savedApps.fastAny { application ->
+                    condition(application, clickCount)
+                }
+            }
+            .maxBy { it.count }
+            .count
+        if (maxCount > 400) {
+            maxCount = (maxCount + 0.7).toInt()
         }
-        return count
+        return maxCount
     }
 
     private fun calculateFontWeight(clickCount: Int, maxClicks: Int): Int {
