@@ -13,6 +13,7 @@ import com.darekbx.lightlauncher.repository.local.dto.NotificationDto
 
 @Database(
     entities = [ApplicationDto::class, ClickCountDto::class, NotificationDto::class],
+    exportSchema = true,
     version = 2
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
@@ -108,9 +110,16 @@ class UserApplicationsViewModel(
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 delay(250)
-                val maxCount = clickCountDao.getMaxCount()?.count ?: 0
-                val installedApps = applicationsProvider.listInstalledApplications()
                 val savedApps = applicationDao.fetch()
+                val maxCount = clickCountDao.getMaxCount()
+                    .fastFilter { clickCount->
+                        savedApps.fastAny { application ->
+                            application.activityName != clickCount.activityName
+                        }
+                    }
+                    .maxBy { it.count }
+                    .count
+                val installedApps = applicationsProvider.listInstalledApplications()
                 val applications = installedApps
                     .filter { installedApp ->
                         savedApps.none { savedApp ->
@@ -141,8 +150,15 @@ class UserApplicationsViewModel(
         viewModelScope.launch {
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
-                val maxCount = clickCountDao.getMaxCount()?.count ?: 0
                 val savedApps = applicationDao.fetch()
+                val maxCount = clickCountDao.getMaxCount()
+                    .fastFilter { clickCount->
+                        savedApps.fastAny { application ->
+                            application.activityName == clickCount.activityName
+                        }
+                    }
+                    .maxBy { it.count }
+                    .count
                 val applications = savedApps.map { app ->
                     val clickCount = clickCountDao.get(app.activityName)?.count ?: 0
                     Application(
