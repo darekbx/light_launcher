@@ -172,7 +172,9 @@ class UserApplicationsViewModel(
         savedApps: List<ApplicationDto>,
         condition: (ApplicationDto, ClickCountDto) -> Boolean
     ): Int {
-        var maxCount = clickCountDao.getMaxCount()
+        val maxCount = clickCountDao.getMaxCount()
+            .takeIf { it.isNotEmpty() } ?: return 0
+        var count = maxCount
             .fastFilter { clickCount ->
                 savedApps.fastAny { application ->
                     condition(application, clickCount)
@@ -180,10 +182,10 @@ class UserApplicationsViewModel(
             }
             .maxBy { it.count }
             .count
-        if (maxCount > 400) {
-            maxCount = (maxCount + 0.7).toInt()
+        if (count > 400) {
+            count = (count + 0.7).toInt()
         }
-        return maxCount
+        return count
     }
 
     private fun calculateFontWeight(clickCount: Int, maxClicks: Int): Int {
