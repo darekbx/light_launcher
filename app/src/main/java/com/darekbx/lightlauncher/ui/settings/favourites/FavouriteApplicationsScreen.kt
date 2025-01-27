@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.R
@@ -119,6 +120,7 @@ fun FavouriteApplicationView(
         Text(
             modifier = Modifier.padding(start = 16.dp),
             text = application.label,
+            textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
             fontFamily = fontFamily
@@ -132,11 +134,11 @@ fun ApplicationsListPreview() {
     LightLauncherTheme {
         FavouriteApplicationsList(
             listOf(
-                FavouriteApplication("", "", "Google Maps", true),
-                FavouriteApplication("", "", "Phone", false),
-                FavouriteApplication("", "", "Messages", false),
-                FavouriteApplication("", "", "Settings", false),
-                FavouriteApplication("", "", "Photos", false),
+                FavouriteApplication("", "", "Google Maps", true, true),
+                FavouriteApplication("", "", "Phone", false, false),
+                FavouriteApplication("", "", "Messages", false, false),
+                FavouriteApplication("", "", "Settings", false, false),
+                FavouriteApplication("", "", "Photos", false, false),
             )
         )
     }

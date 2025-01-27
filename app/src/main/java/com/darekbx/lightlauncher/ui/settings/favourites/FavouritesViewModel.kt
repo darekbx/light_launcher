@@ -8,6 +8,7 @@ import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.model.FavouriteApplication
+import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel.Companion.IS_HOME
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,12 +52,13 @@ class FavouritesViewModel(
                 val installedApps = applicationsProvider.listInstalledApplications()
                 val savedApps = applicationDao.fetch()
                 val favouriteApplication = installedApps.map { installedApp ->
-                    val savedApp = savedApps.find { it.packageName == installedApp.packageName }
+                    val savedApp = savedApps.find { it.activityName == installedApp.activityName }
                     FavouriteApplication(
                         activityName = installedApp.activityName,
                         packageName = installedApp.packageName,
                         label = installedApp.label,
-                        isFavourite = savedApp != null
+                        isFavourite = savedApp != null,
+                        isFromHome = savedApp?.packageName?.contains(IS_HOME) ?: false
                     )
                 }
                 _uiState.value = FavouritesUiState.Done(favouriteApplication)

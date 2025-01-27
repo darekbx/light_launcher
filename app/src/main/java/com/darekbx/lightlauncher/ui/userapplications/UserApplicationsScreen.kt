@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,12 +37,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.darekbx.lightlauncher.R
@@ -48,11 +51,13 @@ import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
+import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
 import com.darekbx.lightlauncher.ui.theme.fontFamily
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import java.util.Calendar
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -266,7 +271,6 @@ fun UserApplicationView(
         .collectAsState(initial = emptyList())
     Row(
         modifier
-            .scale(application.scale)
             .semantics { testTag = "favourite_application_view" },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -289,7 +293,7 @@ fun UserApplicationView(
             fontWeight = FontWeight(application.fontWeight),
             textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             fontFamily = fontFamily,
-            fontSize = 23.sp
+            fontSize = 14.sp//application.scale.sp
         )
 
         if (notifications.any { it.packageName == application.packageName }) {
@@ -303,3 +307,49 @@ fun UserApplicationView(
     }
 }
 
+@Composable
+fun YearTargets(modifier: Modifier = Modifier) {
+    val dayOfyear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+    Column(modifier = modifier) {
+        Target("Przejechać wał Obórki - Bielawa", completed = false)
+        Target("10km piechotą", completed = false)
+        Target("Jazda Tamiyą", completed = false)
+        Target("Farma wiatrowa", completed = false)
+        Text(
+            modifier = Modifier.padding(start = 22.dp),
+            text = "${365 - dayOfyear} days left",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+    }
+}
+
+@Composable
+fun Target(name: String, completed:Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = if (completed) Icons.Default.Done else Icons.Default.Clear,
+            contentDescription = "target",
+            tint = if (completed) Color.Green else Color.Red,
+            modifier = Modifier.size(18.dp)
+        )
+        Text(
+            text = name,
+            modifier = Modifier.padding(start = 4.dp),
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+    }
+}
+
+@Preview
+@Composable
+fun YearTargetsPreview() {
+    LightLauncherTheme {
+        Box(Modifier.background(Color.Black).padding(32.dp)) {
+            YearTargets()
+        }
+    }
+}

@@ -9,4 +9,5 @@ data class FavouriteApplication(
     val packageName: String,
     val label: String,
     val isFavourite: Boolean,
+    val isFromHome: Boolean
 ) : Parcelable

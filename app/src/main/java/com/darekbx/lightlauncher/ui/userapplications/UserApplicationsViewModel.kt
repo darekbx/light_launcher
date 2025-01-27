@@ -35,7 +35,7 @@ class UserApplicationsViewModel(
 ) : ViewModel() {
 
     companion object {
-        private val IS_HOME = "com.darekbx.home"
+        val IS_HOME = "com.darekbx.home"
     }
 
     private val removedApplications = mutableListOf<ApplicationDto>()
@@ -133,6 +133,7 @@ class UserApplicationsViewModel(
                         ).apply {
                             fontWeight = calculateFontWeight(clickCount, maxCount)
                             scale = mapToScale(fontWeight)
+                            fontSize = mapToFontSize(fontWeight)
                         }
                     }
                     .sortedBy { it.label.lowercase() }
@@ -161,6 +162,7 @@ class UserApplicationsViewModel(
                     ).apply {
                         fontWeight = calculateFontWeight(clickCount, maxCount)
                         scale = mapToScale(fontWeight)
+                        fontSize = mapToFontSize(fontWeight)
                     }
                 }
                 _uiState.value = UserApplicationsUiState.Done(applications)
@@ -207,5 +209,16 @@ class UserApplicationsViewModel(
     ): Float {
         val clampedValue = value.coerceIn(minInput, maxInput)
         return minScale + (maxScale - minScale) * (clampedValue - minInput) / (maxInput - minInput)
+    }
+
+    private fun mapToFontSize(
+        value: Int,
+        minInput: Int = 1,
+        maxInput: Int = 1000,
+        minSize: Int = 10,
+        maxSize: Int = 48
+    ): Int {
+        val clampedValue = value.coerceIn(minInput, maxInput)
+        return minSize + (maxSize - minSize) * (clampedValue - minInput) / (maxInput - minInput)
     }
 }
