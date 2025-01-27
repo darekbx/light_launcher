@@ -12,5 +12,4 @@ data class Application(
 ) {
     var fontWeight: Int = 400 // DEFAULT FONT WEIGHT
     var scale: Float = 1.0F
-    var fontSize: Int = 14
 }

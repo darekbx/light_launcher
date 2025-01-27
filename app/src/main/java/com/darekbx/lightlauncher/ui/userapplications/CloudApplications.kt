@@ -98,7 +98,7 @@ fun UserApplicationsListCloud(
 
     val applications = (state as UserApplicationsUiState.Done).applications
     ApplicationsListCloud(
-        applications = applications,
+        applications = applications.sortedBy { it.label },
         displayTarget = true,
         arrowView = { ArrowRight(onArrowClick) },
         onAppClick = {
@@ -146,14 +146,14 @@ fun ApplicationsListCloud(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 40.dp, end = 40.dp),
+                .padding(start = 23.dp, end = 23.dp),
             horizontalArrangement = Arrangement.Center,
             verticalArrangement = Arrangement.Center
         ) {
             applications.forEach {
                 UserApplicationView(
                     modifier = Modifier
-                        .padding(start = 4.dp, end = 4.dp, bottom = 8.dp, top = 8.dp)
+                        .padding(start = 8.dp, end = 8.dp, bottom = 4.dp, top = 4.dp)
                         .combinedClickable(
                             onClick = { onAppClick(it) },
                             onLongClick = { onAppLongClick(it) }
@@ -172,7 +172,7 @@ fun ApplicationsListCloud(
         )
 
         if (displayTarget) {
-            YearTargets(modifier = Modifier.align(Alignment.BottomStart).padding(32.dp))
+            YearTargets(modifier = Modifier.align(Alignment.BottomStart).padding(8.dp))
         }
     }
 }

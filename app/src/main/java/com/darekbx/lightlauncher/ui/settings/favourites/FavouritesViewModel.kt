@@ -58,9 +58,9 @@ class FavouritesViewModel(
                         packageName = installedApp.packageName,
                         label = installedApp.label,
                         isFavourite = savedApp != null,
-                        isFromHome = savedApp?.packageName?.contains(IS_HOME) ?: false
+                        isFromHome = installedApp.packageName.contains(IS_HOME)
                     )
-                }
+                }.sortedBy { it.label }
                 _uiState.value = FavouritesUiState.Done(favouriteApplication)
             }
         }
