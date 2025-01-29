@@ -37,7 +37,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
@@ -69,11 +68,13 @@ fun UserApplicationsScreen(
 ) {
     var isPaged by remember { mutableStateOf(true) }
     var isCloud by remember { mutableStateOf(false) }
+    var isSelfOrganizedCloud by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        settingsViewModel.load { usePages, useCloud, _ ->
+        settingsViewModel.load { usePages, useCloud, uUseSelfOrganizedCloud, _ ->
             isPaged = usePages
             isCloud = useCloud
+            isSelfOrganizedCloud = uUseSelfOrganizedCloud
         }
     }
 
@@ -89,7 +90,8 @@ fun UserApplicationsScreen(
             0 -> {
                 if (isCloud) {
                     UserApplicationsListCloud(
-                        onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                        onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+                        isSelfOrganizedCloud = isSelfOrganizedCloud
                     )
                 } else if (isPaged) {
                     UserApplicationsListPaged(
@@ -272,7 +274,6 @@ fun UserApplicationView(
         .collectAsState(initial = emptyList())
     Row(
         modifier
-            .scale(application.scale)
             .semantics { testTag = "favourite_application_view" },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -295,7 +296,7 @@ fun UserApplicationView(
             fontWeight = FontWeight(application.fontWeight),
             textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             fontFamily = fontFamily,
-            fontSize = 20.sp
+            fontSize = 14.sp//application.scale.sp
         )
 
         if (notifications.any { it.packageName == application.packageName }) {

@@ -35,10 +35,8 @@ class UserApplicationsViewModel(
 ) : ViewModel() {
 
     companion object {
-        val IS_HOME = "com.darekbx.home"
+        const val IS_HOME = "com.darekbx.home"
     }
-
-    private val removedApplications = mutableListOf<ApplicationDto>()
 
     val applicationsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -51,22 +49,6 @@ class UserApplicationsViewModel(
             }
         }
     }
-
-    // TODO if flag EXTRA_REPLACING will be working, delete this code
-    /*private fun restoreRemovedApplications(intent: Intent) {
-        if (intent.action == Intent.ACTION_PACKAGE_ADDED) {
-            intent.data?.schemeSpecificPart?.let { packageName ->
-                viewModelScope.launch {
-                    withContext(ioDispatcher) {
-                        removedApplications
-                            .filter { it.packageName == packageName }
-                            .forEach { applicationDao.add(it) }
-                        removedApplications.removeAll { it.packageName == packageName }
-                    }
-                }
-            }
-        }
-    }*/
 
     private fun checkIfAppShouldBeRemoved(intent: Intent) {
         if (intent.action == Intent.ACTION_PACKAGE_REMOVED) {
@@ -111,7 +93,7 @@ class UserApplicationsViewModel(
             withContext(ioDispatcher) {
                 delay(250)
                 val savedApps = applicationDao.fetch()
-                var maxCount = getMaxCount(savedApps) { application, clickCount ->
+                val maxCount = getMaxCount(savedApps) { application, clickCount ->
                     application.activityName != clickCount.activityName
                 }
                 val installedApps = applicationsProvider.listInstalledApplications()
@@ -122,18 +104,14 @@ class UserApplicationsViewModel(
                         }
                     }
                     .map { app ->
-                        val clickCount = clickCountDao.get(app.activityName)?.count ?: 0
-                        Application(
-                            activityName = app.activityName,
-                            packageName = app.packageName,
-                            label = app.label,
-                            icon = app.icon,
-                            order = -1,
-                            isFromHome = app.packageName.contains(IS_HOME)
-                        ).apply {
+                        with(app) {
+                            val clickCount = clickCountDao.get(activityName)?.count ?: 0
                             fontWeight = calculateFontWeight(clickCount, maxCount)
                             scale = mapToScale(fontWeight)
+                            fontSize = mapToFontSize(fontWeight)
+                            isFromHome = packageName.contains(IS_HOME)
                         }
+                        app
                     }
                     .sortedBy { it.label.lowercase() }
                 _uiState.value = UserApplicationsUiState.Done(applications)
@@ -146,21 +124,24 @@ class UserApplicationsViewModel(
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 val savedApps = applicationDao.fetch()
-                var maxCount = getMaxCount(savedApps) { application, clickCount ->
+                val maxCount = getMaxCount(savedApps) { application, clickCount ->
                     application.activityName == clickCount.activityName
                 }
-                val applications = savedApps.map { app ->
-                    val clickCount = clickCountDao.get(app.activityName)?.count ?: 0
+                val applications = savedApps.map { dto ->
+                    val clickCount = clickCountDao.get(dto.activityName)?.count ?: 0
                     Application(
-                        activityName = app.activityName,
-                        packageName = app.packageName,
-                        label = app.label,
-                        icon = packageManager.getApplicationIcon(app.packageName),
-                        order = app.order,
-                        isFromHome = app.packageName.contains(IS_HOME)
+                        activityName = dto.activityName,
+                        packageName = dto.packageName,
+                        label = dto.label,
+                        icon = packageManager.getApplicationIcon(dto.packageName),
+                        order = dto.order,
+                        x = dto.x,
+                        y = dto.y,
                     ).apply {
                         fontWeight = calculateFontWeight(clickCount, maxCount)
                         scale = mapToScale(fontWeight)
+                        fontSize = mapToFontSize(fontWeight)
+                        isFromHome = dto.packageName.contains(IS_HOME)
                     }
                 }
                 _uiState.value = UserApplicationsUiState.Done(applications)
@@ -207,5 +188,16 @@ class UserApplicationsViewModel(
     ): Float {
         val clampedValue = value.coerceIn(minInput, maxInput)
         return minScale + (maxScale - minScale) * (clampedValue - minInput) / (maxInput - minInput)
+    }
+
+    private fun mapToFontSize(
+        value: Int,
+        minInput: Int = 1,
+        maxInput: Int = 1000,
+        minSize: Int = 10,
+        maxSize: Int = 48
+    ): Int {
+        val clampedValue = value.coerceIn(minInput, maxInput)
+        return minSize + (maxSize - minSize) * (clampedValue - minInput) / (maxInput - minInput)
     }
 }

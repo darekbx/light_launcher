@@ -8,12 +8,13 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(private val settingsStore: SettingsStore) : ViewModel() {
 
-    fun load(done: (usePages: Boolean, useCloud: Boolean, pageSize: Int) -> Unit) {
+    fun load(done: (usePages: Boolean, useCloud: Boolean, shouldUseSelfOrganizedCloud: Boolean, pageSize: Int) -> Unit) {
         viewModelScope.launch {
             val pageSize = settingsStore.pageSize.first()
             val shouldUsePages = settingsStore.shouldUsePages.first()
             val shoulduseCloud = settingsStore.shouldUseCloud.first()
-            done(shouldUsePages, shoulduseCloud, pageSize)
+            val shouldUseSelfOrganizedCloud = settingsStore.shouldUseSelfOrganizedCloud.first()
+            done(shouldUsePages, shoulduseCloud, shouldUseSelfOrganizedCloud, pageSize)
         }
     }
 
@@ -26,6 +27,12 @@ class SettingsViewModel(private val settingsStore: SettingsStore) : ViewModel() 
     fun setUseCloud(value: Boolean) {
         viewModelScope.launch {
             settingsStore.setUseCloud(value)
+        }
+    }
+
+    fun setUseSelfOrganizedCloud(value: Boolean) {
+        viewModelScope.launch {
+            settingsStore.setUseSelfOrganizedCloud(value)
         }
     }
 

@@ -10,5 +10,7 @@ class ApplicationDto(
     @ColumnInfo(name = "activity_name") var activityName: String = "",
     @ColumnInfo(name = "package_name") var packageName: String = "",
     @ColumnInfo(name = "label") var label: String = "",
-    @ColumnInfo(name = "order") var order: Int = 0
+    @ColumnInfo(name = "order") var order: Int = 0,
+    @ColumnInfo(name = "x") var x: Int = -1,
+    @ColumnInfo(name = "y") var y: Int = -1
 )

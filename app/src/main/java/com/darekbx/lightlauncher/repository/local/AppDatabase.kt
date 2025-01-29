@@ -14,7 +14,7 @@ import com.darekbx.lightlauncher.repository.local.dto.NotificationDto
 @Database(
     entities = [ApplicationDto::class, ClickCountDto::class, NotificationDto::class],
     exportSchema = true,
-    version = 2
+    version = 3
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -36,6 +36,13 @@ abstract class AppDatabase : RoomDatabase() {
                          PRIMARY KEY(`id`)
                        )"""
                 )
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `application` ADD COLUMN `x` INTEGER NOT NULL DEFAULT -1")
+                db.execSQL("ALTER TABLE `application` ADD COLUMN `y` INTEGER NOT NULL DEFAULT -1")
             }
         }
     }

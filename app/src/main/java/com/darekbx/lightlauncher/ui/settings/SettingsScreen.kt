@@ -38,7 +38,8 @@ import java.util.Locale
 @Composable
 fun SettingsScreen(
     openFavouriteApplications: () -> Unit = { },
-    openApplicationsOrder: () -> Unit = { }
+    openApplicationsOrder: () -> Unit = { },
+    openSelfOrganizedCloudOrder: () -> Unit = { },
 ) {
     Column(
         modifier = Modifier
@@ -66,6 +67,12 @@ fun SettingsScreen(
                 .clickable { openApplicationsOrder() },
             title = "applications order"
         )
+        SettingsOption(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { openSelfOrganizedCloudOrder() },
+            title = "organize cloud"
+        )
 
         UiSettings()
 
@@ -91,12 +98,14 @@ fun SettingsScreen(
 private fun UiSettings(settingsViewModel: SettingsViewModel = koinViewModel()) {
     var usePages by remember { mutableStateOf(true) }
     var useCloud by remember { mutableStateOf(false) }
+    var useSelfOrganizedCloud by remember { mutableStateOf(false) }
     var pageSize by remember { mutableStateOf(PageSize.MEDIUM) }
 
     LaunchedEffect(Unit) {
-        settingsViewModel.load { usePagesValue, useCloudValue, pageSizeValue ->
+        settingsViewModel.load { usePagesValue, useCloudValue, useSelfOrganizedCloudValue, pageSizeValue ->
             usePages = usePagesValue
             useCloud = useCloudValue
+            useSelfOrganizedCloud = useSelfOrganizedCloudValue
             pageSize = PageSize.entries
                 .find { pageSize -> pageSize.value == pageSizeValue }
                 ?: PageSize.MEDIUM
@@ -138,6 +147,26 @@ private fun UiSettings(settingsViewModel: SettingsViewModel = koinViewModel()) {
             usePages = false
             settingsViewModel.setUsePages(false)
             settingsViewModel.setUseCloud(it)
+        },
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = MaterialTheme.colorScheme.background,
+            checkedTrackColor = MaterialTheme.colorScheme.onBackground,
+        )
+    )
+
+    Text(
+        modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
+        text = "use self organized cloud",
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onBackground,
+        fontFamily = fontFamily
+    )
+    Switch(
+        checked = useSelfOrganizedCloud,
+        enabled = useCloud,
+        onCheckedChange = {
+            useSelfOrganizedCloud = it
+            settingsViewModel.setUseSelfOrganizedCloud(it)
         },
         colors = SwitchDefaults.colors(
             checkedThumbColor = MaterialTheme.colorScheme.background,

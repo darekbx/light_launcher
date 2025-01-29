@@ -155,7 +155,7 @@ fun ApplicationsListPaged(
         }
 
     LaunchedEffect(Unit) {
-        settingsViewModel.load { _, _, pageSizeValue ->
+        settingsViewModel.load { _, _, _, pageSizeValue ->
             pageSize = pageSizeValue
         }
     }
@@ -385,23 +385,66 @@ fun ArrowLeft(onArrowClick: () -> Unit) {
 @Composable
 fun UserApplicationsListPagedPreview() {
     val names = listOf(
-        "70mai", "Alior Mobile", "Allegro", "Assistant", "Authenticator", "Backup",
-        "Books", "Calculator", "Calendar", "Camera", "Chrome", "Clock",
-        "Phone", "Photos", "Google Earth", "Google Pay", "Google Play", "Google Play Movies",
-        "Contacts", "Drive", "Duo", "Files", "Find Device", "Gmail",
-        "Google", "Keep", "Maps", "Messages", "Music", "News",
-        "Phone", "Photos", "Google Earth", "Google Pay", "Google Play", "Google Play Movies",
-        "Google Play Music", "Play Store", "Settings", "Spotify", "Translate", "YouTube",
-        "Zoom", "Google Earth", "Google Pay", "Google Play", "Google Play Movies", "Google Play Music"
+        "70mai",
+        "Alior Mobile",
+        "Allegro",
+        "Assistant",
+        "Authenticator",
+        "Backup",
+        "Books",
+        "Calculator",
+        "Calendar",
+        "Camera",
+        "Chrome",
+        "Clock",
+        "Phone",
+        "Photos",
+        "Google Earth",
+        "Google Pay",
+        "Google Play",
+        "Google Play Movies",
+        "Contacts",
+        "Drive",
+        "Duo",
+        "Files",
+        "Find Device",
+        "Gmail",
+        "Google",
+        "Keep",
+        "Maps",
+        "Messages",
+        "Music",
+        "News",
+        "Phone",
+        "Photos",
+        "Google Earth",
+        "Google Pay",
+        "Google Play",
+        "Google Play Movies",
+        "Google Play Music",
+        "Play Store",
+        "Settings",
+        "Spotify",
+        "Translate",
+        "YouTube",
+        "Zoom",
+        "Google Earth",
+        "Google Pay",
+        "Google Play",
+        "Google Play Movies",
+        "Google Play Music"
     )
-    val applications = names.map { Application("", "", it, null, 0, false) }
+    val applications = names.map { Application("", "", it, null) }
     LightLauncherTheme {
         KoinApplication(application = { modules(appModule, viewModelModule) }) {
             FlowRow(
-                modifier = Modifier.fillMaxSize().background(Color.Black).padding(start = 48.dp, end = 48.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .padding(start = 48.dp, end = 48.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalArrangement = Arrangement.Center
-            )  {
+            ) {
                 applications.forEach { application ->
                     Text(
                         modifier = Modifier.padding(8.dp),

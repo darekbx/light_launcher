@@ -18,8 +18,6 @@ class ApplicationsProvider(
                     getPackageName(it),
                     loadAppLabel(it),
                     loadAppIcon(it),
-                    order = -1,
-                    isFromHome = false
                 )
             }
     }

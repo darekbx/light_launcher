@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.darekbx.lightlauncher.ui.settings.SettingsScreen
 import com.darekbx.lightlauncher.ui.settings.favourites.FavouriteApplicationsScreen
 import com.darekbx.lightlauncher.ui.settings.order.ApplicationsOrderScreen
+import com.darekbx.lightlauncher.ui.settings.selforganized.SelfOrganizedCloud
 import com.darekbx.lightlauncher.ui.statistics.StatisticsScreen
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsScreen
 
@@ -32,6 +33,7 @@ fun AppNavHost(
             SettingsScreen(
                 openFavouriteApplications = { controller.navigate(FavouriteApplicationsDestination.route) },
                 openApplicationsOrder = { controller.navigate(ApplicationsOrderDestination.route) },
+                openSelfOrganizedCloudOrder = { controller.navigate(ApplicationsSelfOrganizedDestination.route) },
             )
         }
 
@@ -41,6 +43,10 @@ fun AppNavHost(
 
         composable(route = ApplicationsOrderDestination.route) {
             ApplicationsOrderScreen()
+        }
+
+        composable(route = ApplicationsSelfOrganizedDestination.route) {
+            SelfOrganizedCloud()
         }
 
         composable(route = StatisticsDestination.route) {

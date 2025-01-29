@@ -20,6 +20,7 @@ import com.darekbx.lightlauncher.system.PackageManagerWrapper
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
 import com.darekbx.lightlauncher.ui.settings.favourites.FavouritesViewModel
 import com.darekbx.lightlauncher.ui.settings.order.OrderViewModel
+import com.darekbx.lightlauncher.ui.settings.selforganized.SelfOrganizedCloudViewModel
 import com.darekbx.lightlauncher.ui.statistics.StatisticsViewModel
 import com.darekbx.lightlauncher.ui.userapplications.NotificationViewModel
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel
@@ -62,6 +63,12 @@ val viewModelModule = module {
     }
     viewModel {
         OrderViewModel(
+            get(),
+            get(named("io_dispatcher"))
+        )
+    }
+    viewModel {
+        SelfOrganizedCloudViewModel(
             get(),
             get(named("io_dispatcher"))
         )
