@@ -56,7 +56,7 @@ class UserApplicationsViewModelTest {
     @Test
     fun `increaseClickCount increases count for new application`() = runTest {
         // Given
-        val application = Application("Activity name", "com.test.app", "Test app", mockk(), 0, false)
+        val application = Application("Activity name", "com.test.app", "Test app", mockk(), 0)
         coEvery { clickCountDao.get(application.activityName) } returns null
         coEvery { clickCountDao.add(any()) } just runs
 
@@ -71,7 +71,7 @@ class UserApplicationsViewModelTest {
     @Test
     fun `increaseClickCount increases count for existing application`() = runTest {
         // Given
-        val application = Application("Activity name", "com.test.app", "Test app", mockk(), 0, false)
+        val application = Application("Activity name", "com.test.app", "Test app", mockk(), 0)
         coEvery { clickCountDao.get(application.activityName) } returns ClickCountDto(null, application.activityName, 1)
         coEvery { clickCountDao.increaseClicks(any()) } just runs
 
@@ -107,8 +107,8 @@ class UserApplicationsViewModelTest {
     fun `loadAllApplications fetches mapped item`() = runTest {
         // given
         coEvery { applicationsProvider.listInstalledApplications() } returns listOf(
-            Application("Activity name 1", "com.test.app1", "Test app1", mockk(), 0, false),
-            Application("Activity name 2", "com.test.app2", "Test app2", mockk(), 0, false)
+            Application("Activity name 1", "com.test.app1", "Test app1", mockk(), 0),
+            Application("Activity name 2", "com.test.app2", "Test app2", mockk(), 0)
         )
         coEvery { applicationDao.fetch() } returns listOf(
             ApplicationDto(1L, "Activity name 1", "com.test.app1", "Test app1"),

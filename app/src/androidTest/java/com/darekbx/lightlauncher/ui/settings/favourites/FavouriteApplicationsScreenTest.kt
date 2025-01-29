@@ -20,7 +20,7 @@ class FavouriteApplicationsScreenTest {
     @Test
     fun `should change favourite to unchecked on click`() = runTest {
         // given
-        val application = FavouriteApplication("", "com.test.package", "Label", true)
+        val application = FavouriteApplication("", "com.test.package", "Label", true, false)
         composeTestRule.setContent {
             LightLauncherTheme {
                 FavouriteApplicationView(Modifier, application)
@@ -40,7 +40,7 @@ class FavouriteApplicationsScreenTest {
     @Test
     fun `should change favourite to checked on click`() = runTest {
         // given
-        val application = FavouriteApplication("", "com.test.package", "Label", false)
+        val application = FavouriteApplication("", "com.test.package", "Label", false, false)
         composeTestRule.setContent {
             LightLauncherTheme {
                 FavouriteApplicationView(Modifier, application)

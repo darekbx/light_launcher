@@ -8,6 +8,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.darekbx.lightlauncher.repository.local.AppDatabase
 import com.darekbx.lightlauncher.repository.local.AppDatabase.Companion.MIGRATION_1_2
+import com.darekbx.lightlauncher.repository.local.AppDatabase.Companion.MIGRATION_2_3
 import com.darekbx.lightlauncher.repository.local.SettingsStore
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
@@ -37,6 +38,7 @@ val databaseModule = module {
         Room
             .databaseBuilder(get<Application>(), AppDatabase::class.java, AppDatabase.DB_NAME)
             .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_2_3)
             .build()
     }
     single<ApplicationDao> { get<AppDatabase>().applicationDao() }

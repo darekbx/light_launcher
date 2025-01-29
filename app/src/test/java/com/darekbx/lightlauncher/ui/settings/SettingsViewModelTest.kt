@@ -47,7 +47,7 @@ class SettingsViewModelTest {
         // When
         var resultUsePages = false
         var resultPageSize = 0
-        viewModel.load { _, usePages, pageSize ->
+        viewModel.load { _, usePages, _, pageSize ->
             resultUsePages = usePages
             resultPageSize = pageSize
         }
