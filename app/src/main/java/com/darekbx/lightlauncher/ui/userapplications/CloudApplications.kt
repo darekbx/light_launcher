@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.model.Application
@@ -132,9 +134,10 @@ fun ApplicationsListCloud(
             OrganizedCloud(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(start = 40.dp, end = 40.dp),
-                applications = applications
+                    .verticalScroll(rememberScrollState()),
+                applications = applications,
+                onAppClick = onAppClick,
+                onAppLongClick = onAppLongClick
             )
         } else {
             FlowRow(
@@ -170,7 +173,7 @@ fun ApplicationsListCloud(
         if (displayTarget) {
             YearTargets(modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(32.dp))
+                .padding(8.dp))
         }
     }
 }
@@ -183,6 +186,23 @@ fun OrganizedCloud(
     onAppClick: (Application) -> Unit = { },
     onAppLongClick: (Application) -> Unit = { },
 ) {
+    Box(modifier) {
+        applications.forEach { application ->
+            UserApplicationView(
+                modifier = Modifier
+                    .offset { IntOffset(application.x, application.y) }
+                    .padding(8.dp)
+                    .combinedClickable(
+                        onClick = { onAppClick(application) },
+                        onLongClick = { onAppLongClick(application) }
+                    ),
+                application = application
+            )
+
+        }
+    }
+    /*
+    // TODO - fix this
     ApplicationsBoard(modifier, application = { index -> applications[index] }) {
         applications.forEach { application ->
             UserApplicationView(
@@ -195,7 +215,7 @@ fun OrganizedCloud(
                 application = application
             )
         }
-    }
+    }*/
 }
 
 @Composable
@@ -210,8 +230,8 @@ fun ApplicationsBoard(
         }
         layout(constraints.maxWidth, constraints.maxHeight) {
             mainPlaceables.forEachIndexed { index, placeable ->
-                val tag = application(index)
-                placeable.place(tag.x, tag.y)
+                val app = application(index)
+                placeable.place(app.x, app.y)
             }
         }
     }

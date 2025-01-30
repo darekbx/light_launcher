@@ -296,7 +296,7 @@ fun UserApplicationView(
             fontWeight = FontWeight(application.fontWeight),
             textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             fontFamily = fontFamily,
-            fontSize = 14.sp//application.scale.sp
+            fontSize = 15.sp//application.scale.sp
         )
 
         if (notifications.any { it.packageName == application.packageName }) {

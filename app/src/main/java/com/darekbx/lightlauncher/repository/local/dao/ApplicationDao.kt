@@ -44,4 +44,8 @@ interface ApplicationDao {
      */
     @Query("UPDATE application SET `order` = :order WHERE activity_name = :activityName")
     suspend fun setOrder(activityName: String, order: Int)
+
+
+    @Query("UPDATE application SET `x` = :x, `y` = :y WHERE activity_name = :activityName")
+    suspend fun setLocation(activityName: String, x: Int, y: Int)
 }

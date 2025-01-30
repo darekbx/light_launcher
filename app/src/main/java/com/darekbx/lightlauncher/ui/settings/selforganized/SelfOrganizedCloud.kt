@@ -34,9 +34,7 @@ fun SelfOrganizedCloud(
                     modifier = Modifier.fillMaxSize(),
                     applications = it.applications,
                     onPositionChanged = { application ->
-
-                        // TODO update state
-
+                        selfOrganizedCloudViewModel.setLocation(application)
                     })
             }
 

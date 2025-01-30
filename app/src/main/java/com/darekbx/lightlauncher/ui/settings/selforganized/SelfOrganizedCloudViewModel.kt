@@ -24,6 +24,14 @@ class SelfOrganizedCloudViewModel(
     val uiState: State<SelfOrganizedCloudUiState>
         get() = _uiState
 
+    fun setLocation(application: Application) {
+        viewModelScope.launch {
+            withContext(ioDispatcher) {
+                applicationDao.setLocation(application.activityName, application.x, application.y)
+            }
+        }
+    }
+
     fun loadApplicationsOrder() {
         viewModelScope.launch {
             _uiState.value = SelfOrganizedCloudUiState.Idle
