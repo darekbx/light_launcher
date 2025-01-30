@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
@@ -274,6 +275,7 @@ fun UserApplicationView(
         .collectAsState(initial = emptyList())
     Row(
         modifier
+            .scale(application.scale)
             .semantics { testTag = "favourite_application_view" },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -296,7 +298,7 @@ fun UserApplicationView(
             fontWeight = FontWeight(application.fontWeight),
             textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             fontFamily = fontFamily,
-            fontSize = 15.sp//application.scale.sp
+            fontSize = 20.sp//application.scale.sp
         )
 
         if (notifications.any { it.packageName == application.packageName }) {

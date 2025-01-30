@@ -72,6 +72,7 @@ val viewModelModule = module {
     viewModel {
         SelfOrganizedCloudViewModel(
             get(),
+            get(),
             get(named("io_dispatcher"))
         )
     }

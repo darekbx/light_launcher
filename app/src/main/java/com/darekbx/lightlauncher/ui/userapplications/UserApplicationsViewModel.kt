@@ -16,6 +16,10 @@ import com.darekbx.lightlauncher.repository.local.dto.ClickCountDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
 import com.darekbx.lightlauncher.system.model.Application
+import com.darekbx.lightlauncher.ui.calculateFontWeight
+import com.darekbx.lightlauncher.ui.getMaxCount
+import com.darekbx.lightlauncher.ui.mapToFontSize
+import com.darekbx.lightlauncher.ui.mapToScale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -93,7 +97,7 @@ class UserApplicationsViewModel(
             withContext(ioDispatcher) {
                 delay(250)
                 val savedApps = applicationDao.fetch()
-                val maxCount = getMaxCount(savedApps) { application, clickCount ->
+                val maxCount = getMaxCount(clickCountDao, savedApps) { application, clickCount ->
                     application.activityName != clickCount.activityName
                 }
                 val installedApps = applicationsProvider.listInstalledApplications()
@@ -124,7 +128,7 @@ class UserApplicationsViewModel(
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 val savedApps = applicationDao.fetch()
-                val maxCount = getMaxCount(savedApps) { application, clickCount ->
+                val maxCount = getMaxCount(clickCountDao, savedApps) { application, clickCount ->
                     application.activityName == clickCount.activityName
                 }
                 val applications = savedApps.map { dto ->
@@ -147,57 +151,5 @@ class UserApplicationsViewModel(
                 _uiState.value = UserApplicationsUiState.Done(applications)
             }
         }
-    }
-
-    private suspend fun getMaxCount(
-        savedApps: List<ApplicationDto>,
-        condition: (ApplicationDto, ClickCountDto) -> Boolean
-    ): Int {
-        val maxCount = clickCountDao.getMaxCount()
-            .takeIf { it.isNotEmpty() } ?: return 0
-        var count = maxCount
-            .fastFilter { clickCount ->
-                savedApps.fastAny { application ->
-                    condition(application, clickCount)
-                }
-            }
-            .maxBy { it.count }
-            .count
-        if (count > 400) {
-            count = (count + 0.7).toInt()
-        }
-        return count
-    }
-
-    private fun calculateFontWeight(clickCount: Int, maxClicks: Int): Int {
-        val minWeight = 1
-        val maxWeight = 1000
-        if (maxClicks == 0) {
-            return 400 // Default font weight
-        }
-        val normalizedClickCount = clickCount.coerceAtMost(maxClicks)
-        return minWeight + ((maxWeight - minWeight) * normalizedClickCount / maxClicks)
-    }
-
-    private fun mapToScale(
-        value: Int,
-        minInput: Int = 1,
-        maxInput: Int = 1000,
-        minScale: Float = 0.7F,
-        maxScale: Float = 1.4F
-    ): Float {
-        val clampedValue = value.coerceIn(minInput, maxInput)
-        return minScale + (maxScale - minScale) * (clampedValue - minInput) / (maxInput - minInput)
-    }
-
-    private fun mapToFontSize(
-        value: Int,
-        minInput: Int = 1,
-        maxInput: Int = 1000,
-        minSize: Int = 10,
-        maxSize: Int = 48
-    ): Int {
-        val clampedValue = value.coerceIn(minInput, maxInput)
-        return minSize + (maxSize - minSize) * (clampedValue - minInput) / (maxInput - minInput)
     }
 }

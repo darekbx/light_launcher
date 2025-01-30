@@ -5,7 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
+import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
 import com.darekbx.lightlauncher.system.model.Application
+import com.darekbx.lightlauncher.ui.calculateFontWeight
+import com.darekbx.lightlauncher.ui.getMaxCount
+import com.darekbx.lightlauncher.ui.mapToFontSize
+import com.darekbx.lightlauncher.ui.mapToScale
+import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel.Companion.IS_HOME
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -17,6 +23,7 @@ sealed class SelfOrganizedCloudUiState {
 
 class SelfOrganizedCloudViewModel(
     private val applicationDao: ApplicationDao,
+    private val clickCountDao: ClickCountDao,
     private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
@@ -37,7 +44,11 @@ class SelfOrganizedCloudViewModel(
             _uiState.value = SelfOrganizedCloudUiState.Idle
             withContext(ioDispatcher) {
                 val savedApps = applicationDao.fetch()
+                val maxCount = getMaxCount(clickCountDao, savedApps) { application, clickCount ->
+                    application.activityName == clickCount.activityName
+                }
                 val userApplications = savedApps.map { dto ->
+                    val clickCount = clickCountDao.get(dto.activityName)?.count ?: 0
                     Application(
                         activityName = dto.activityName,
                         packageName = dto.packageName,
@@ -46,7 +57,12 @@ class SelfOrganizedCloudViewModel(
                         order = dto.order,
                         x = dto.x,
                         y = dto.y
-                    )
+                    ).apply {
+                        fontWeight = calculateFontWeight(clickCount, maxCount)
+                        scale = mapToScale(fontWeight)
+                        fontSize = mapToFontSize(fontWeight)
+                        isFromHome = dto.packageName.contains(IS_HOME)
+                    }
                 }
                 _uiState.value = SelfOrganizedCloudUiState.Done(userApplications)
             }
