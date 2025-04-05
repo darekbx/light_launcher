@@ -211,12 +211,13 @@ fun ApplicationsListPaged(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(start = 48.dp, end = 48.dp)
-                                .padding(top = 12.dp, bottom = 12.dp)
+                                .padding(top = 16.dp, bottom = 16.dp)
                                 .combinedClickable(
                                     onClick = { onAppClick(it) },
                                     onLongClick = { onAppLongClick(it) }
                                 ),
-                            it
+                            application = it,
+                            staticSize = true
                         )
                     }
 

@@ -174,7 +174,8 @@ fun AllApplicationsList(
                                 activityStarter.openSettings(item)
                             }
                         ),
-                    item
+                    application = item,
+                    staticSize = true
                 )
             }
         }
@@ -248,7 +249,8 @@ fun UserApplicationsList(
                                 activityStarter.openSettings(item)
                             }
                         ),
-                    item
+                    application = item,
+                    staticSize = true
                 )
             }
         }
@@ -268,6 +270,7 @@ fun UserApplicationsList(
 fun UserApplicationView(
     modifier: Modifier = Modifier,
     application: Application,
+    staticSize: Boolean = false,
     notificationViewModel: NotificationViewModel = koinViewModel()
 ) {
     val showAppIcon = false
@@ -275,7 +278,7 @@ fun UserApplicationView(
         .collectAsState(initial = emptyList())
     Row(
         modifier
-            .scale(application.scale)
+            .ifTrue(!staticSize) { scale(application.scale) }
             .semantics { testTag = "favourite_application_view" },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -290,14 +293,20 @@ fun UserApplicationView(
             )
         }
 
+        val weight = if (staticSize) {
+            if (application.isFromHome) FontWeight.W600
+            else FontWeight.W200
+        } else FontWeight(application.fontWeight)
+
         Text(
             modifier = Modifier,
             text = application.label,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
-            fontWeight = FontWeight(application.fontWeight),
-            textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
-            fontFamily = fontFamily,
+            fontWeight = weight,
+            letterSpacing = 2.sp,
+            //textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
+            //fontFamily = fontFamily,
             fontSize = 20.sp//application.scale.sp
         )
 
@@ -331,7 +340,7 @@ fun YearTargets(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Target(name: String, completed:Boolean) {
+fun Target(name: String, completed: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = if (completed) Icons.Default.Done else Icons.Default.Clear,
@@ -349,11 +358,16 @@ fun Target(name: String, completed:Boolean) {
     }
 }
 
+inline fun Modifier.ifTrue(value: Boolean, builder: Modifier.() -> Modifier): Modifier =
+    if (value) this.builder() else this
+
 @Preview
 @Composable
 fun YearTargetsPreview() {
     LightLauncherTheme {
-        Box(Modifier.background(Color.Black).padding(32.dp)) {
+        Box(Modifier
+            .background(Color.Black)
+            .padding(32.dp)) {
             YearTargets()
         }
     }
