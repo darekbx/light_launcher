@@ -294,7 +294,7 @@ fun UserApplicationView(
         }
 
         val weight = if (staticSize) {
-            if (application.isFromHome) FontWeight.W600
+            if (application.isFromHome) FontWeight.W500
             else FontWeight.W300
         } else FontWeight(application.fontWeight)
 

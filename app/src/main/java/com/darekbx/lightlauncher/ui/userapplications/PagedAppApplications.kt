@@ -220,7 +220,7 @@ fun ApplicationsListPaged(
                                     onLongClick = { onAppLongClick(it) }
                                 )
                                 .background(Color.Black, RoundedCornerShape(8.dp))
-                                .padding(start = 48.dp, end = 48.dp)
+                                .padding(start = 24.dp, end = 24.dp)
                                 .padding(top = 16.dp, bottom = 16.dp),
                             application = it,
                             staticSize = true
