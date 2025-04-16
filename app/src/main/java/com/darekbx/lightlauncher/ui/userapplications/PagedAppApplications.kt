@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -21,6 +22,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -210,12 +213,15 @@ fun ApplicationsListPaged(
                         UserApplicationView(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 48.dp, end = 48.dp)
-                                .padding(top = 16.dp, bottom = 16.dp)
                                 .combinedClickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = rememberRipple(color = Color.Cyan),
                                     onClick = { onAppClick(it) },
                                     onLongClick = { onAppLongClick(it) }
-                                ),
+                                )
+                                .background(Color.Black, RoundedCornerShape(8.dp))
+                                .padding(start = 48.dp, end = 48.dp)
+                                .padding(top = 16.dp, bottom = 16.dp),
                             application = it,
                             staticSize = true
                         )

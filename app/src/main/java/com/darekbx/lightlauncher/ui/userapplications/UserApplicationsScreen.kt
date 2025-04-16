@@ -295,7 +295,7 @@ fun UserApplicationView(
 
         val weight = if (staticSize) {
             if (application.isFromHome) FontWeight.W600
-            else FontWeight.W200
+            else FontWeight.W300
         } else FontWeight(application.fontWeight)
 
         Text(
@@ -307,7 +307,7 @@ fun UserApplicationView(
             letterSpacing = 2.sp,
             //textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
             //fontFamily = fontFamily,
-            fontSize = 20.sp//application.scale.sp
+            fontSize = 22.sp//application.scale.sp
         )
 
         if (notifications.any { it.packageName == application.packageName }) {
