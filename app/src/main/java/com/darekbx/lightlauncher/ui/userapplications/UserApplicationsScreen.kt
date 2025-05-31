@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -29,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +40,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,7 +49,6 @@ import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
-import com.darekbx.lightlauncher.ui.theme.fontFamily
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -270,12 +265,9 @@ fun UserApplicationsList(
 fun UserApplicationView(
     modifier: Modifier = Modifier,
     application: Application,
-    staticSize: Boolean = false,
-    notificationViewModel: NotificationViewModel = koinViewModel()
+    staticSize: Boolean = false
 ) {
     val showAppIcon = false
-    val notifications by notificationViewModel.fetchNotifications()
-        .collectAsState(initial = emptyList())
     Row(
         modifier
             .ifTrue(!staticSize) { scale(application.scale) }
@@ -305,19 +297,8 @@ fun UserApplicationView(
             color = MaterialTheme.colorScheme.onBackground,
             fontWeight = weight,
             letterSpacing = 2.sp,
-            //textDecoration = if (application.isFromHome) TextDecoration.Underline else null,
-            //fontFamily = fontFamily,
-            fontSize = 22.sp//application.scale.sp
+            fontSize = 22.sp
         )
-
-        if (notifications.any { it.packageName == application.packageName }) {
-            Spacer(
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(8.dp)
-                    .background(MaterialTheme.colorScheme.onBackground, CircleShape)
-            )
-        }
     }
 }
 
