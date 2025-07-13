@@ -8,21 +8,25 @@ import com.darekbx.lightlauncher.system.model.Application
 class ActivityStarter(private val context: Context) {
 
     fun startApplication(application: Application) {
-        var launchIntent = context.packageManager
-            .getLaunchIntentForPackage(application.packageName)
 
-        if (launchIntent == null) {
-            launchIntent = Intent().apply {
-                setComponent(
-                    ComponentName(
-                        application.packageName,
-                        application.activityName
-                    )
-                )
-            }
+        val launchIntent: Intent = if (application.isFromHome) {
+            componentIntent(application)
+        } else {
+            context.packageManager.getLaunchIntentForPackage(application.packageName)
+                ?: componentIntent(application)
         }
+
         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(launchIntent)
+    }
+
+    private fun componentIntent(application: Application): Intent = Intent().apply {
+        setComponent(
+            ComponentName(
+                application.packageName,
+                application.activityName
+            )
+        )
     }
 
     fun openSettings(application: Application) {
