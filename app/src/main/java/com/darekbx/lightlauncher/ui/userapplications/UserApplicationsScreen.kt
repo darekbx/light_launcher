@@ -68,8 +68,6 @@ fun UserApplicationsScreen(
 ) {
     val context = LocalContext.current
     var isPaged by remember { mutableStateOf(true) }
-    var isCloud by remember { mutableStateOf(false) }
-    var isSelfOrganizedCloud by remember { mutableStateOf(false) }
     var cycleCount by remember { mutableIntStateOf(-1) }
 
     LaunchedEffect(Unit) {
@@ -77,30 +75,24 @@ fun UserApplicationsScreen(
     }
 
     LaunchedEffect(Unit) {
-        settingsViewModel.load { usePages, useCloud, uUseSelfOrganizedCloud, _ ->
+        settingsViewModel.load { usePages, _ ->
             isPaged = usePages
-            isCloud = useCloud
-            isSelfOrganizedCloud = uUseSelfOrganizedCloud
         }
     }
 
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pagerState = rememberPagerState(pageCount = { 3 })
 
     Box(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
+            beyondBoundsPageCount = 0,
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = false,
             state = pagerState
         ) { page ->
             when (page) {
                 0 -> {
-                    if (isCloud) {
-                        UserApplicationsListCloud(
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                            isSelfOrganizedCloud = isSelfOrganizedCloud
-                        )
-                    } else if (isPaged) {
+                   if (isPaged) {
                         UserApplicationsListPaged(
                             onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
                         )
@@ -112,23 +104,34 @@ fun UserApplicationsScreen(
                 }
 
                 1 -> {
-                    if (isCloud) {
-                        AllApplicationsListCloud(
-                            onSettingsClick = onSettingsClick,
-                            onStatisticsClick = onStatisticsClick,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(0) } }
-                        )
-                    } else if (isPaged) {
-                        AllApplicationsListPaged(
-                            onSettingsClick = onSettingsClick,
-                            onStatisticsClick = onStatisticsClick,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(0) } }
+                    if (isPaged) {
+                        ApplicationsListPagedCenter(
+                            loadMode = LoadMode.ONLY_HOME,
+                            onArrowLeftClick = { scope.launch { pagerState.animateScrollToPage(0) } },
+                            onArrowRightClick = { scope.launch { pagerState.animateScrollToPage(2) } }
                         )
                     } else {
                         AllApplicationsList(
+                            loadMode = LoadMode.ONLY_HOME,
+                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(0) } }
+                        )
+                    }
+                }
+
+                2 -> {
+                     if (isPaged) {
+                        ApplicationsListPaged(
+                            loadMode = LoadMode.ALL_EXCEPT_HOME,
                             onSettingsClick = onSettingsClick,
                             onStatisticsClick = onStatisticsClick,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(0) } }
+                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                        )
+                    } else {
+                        AllApplicationsList(
+                            loadMode = LoadMode.ALL_EXCEPT_HOME,
+                            onSettingsClick = onSettingsClick,
+                            onStatisticsClick = onStatisticsClick,
+                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
                         )
                     }
                 }
@@ -160,6 +163,7 @@ fun BatteryHealth(modifier: Modifier = Modifier, cycleCount: Int = 274) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AllApplicationsList(
+    loadMode: LoadMode,
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
     activityStarter: ActivityStarter = koinInject(),
     onSettingsClick: () -> Unit = { },
@@ -169,7 +173,7 @@ fun AllApplicationsList(
     val state by userApplicationsViewModel.uiState
 
     LaunchedEffect(Unit) {
-        userApplicationsViewModel.loadAllApplications()
+        userApplicationsViewModel.loadAllApplications(loadMode)
     }
 
     if (state is UserApplicationsUiState.Idle) {
