@@ -42,6 +42,7 @@ class UserApplicationsViewModel(
 
     companion object {
         const val IS_HOME = "com.darekbx.home"
+        const val IS_MY = "com.darekbx"
     }
 
     val applicationsReceiver = object : BroadcastReceiver() {
@@ -117,14 +118,15 @@ class UserApplicationsViewModel(
                             scale = mapToScale(fontWeight)
                             fontSize = mapToFontSize(fontWeight)
                             isFromHome = packageName.contains(IS_HOME)
+                            isMy = packageName.contains(IS_MY)
                         }
                         app
                     }
                     .filter { app ->
                         when (loadMode) {
                             LoadMode.ALL -> true
-                            LoadMode.ONLY_HOME -> app.isFromHome
-                            LoadMode.ALL_EXCEPT_HOME -> !app.isFromHome
+                            LoadMode.ONLY_HOME -> (app.isFromHome || app.isMy)
+                            LoadMode.ALL_EXCEPT_HOME -> (!app.isFromHome && !app.isMy)
                         }
                     }
                     .sortedBy { it.label.lowercase() }
@@ -156,6 +158,7 @@ class UserApplicationsViewModel(
                         scale = mapToScale(fontWeight)
                         fontSize = mapToFontSize(fontWeight)
                         isFromHome = dto.packageName.contains(IS_HOME)
+                        isMy = dto.packageName.contains(IS_MY)
                     }
                 }
                 _uiState.value = UserApplicationsUiState.Done(applications)
