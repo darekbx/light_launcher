@@ -88,7 +88,8 @@ fun UserApplicationsListPaged(
     val applications = (state as UserApplicationsUiState.Done).applications
     ApplicationsListPaged(
         applications = applications,
-        arrowView = { ArrowRight(onArrowClick) },
+        arrowLeftView = { ArrowRight(onArrowClick) },
+        arrowRightView = null,
         onAppClick = {
             userApplicationsViewModel.increaseClickCount(it)
             activityStarter.startApplication(it)
@@ -100,17 +101,18 @@ fun UserApplicationsListPaged(
 }
 
 @Composable
-fun AllApplicationsListPaged(
-    userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
+fun ApplicationsListPaged(
+    loadMode: LoadMode,
     activityStarter: ActivityStarter = koinInject(),
     onSettingsClick: () -> Unit = { },
     onStatisticsClick: () -> Unit = { },
     onArrowClick: () -> Unit = { }
 ) {
+    val userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(key = "side")
     val state by userApplicationsViewModel.uiState
 
-    LaunchedEffect(Unit) {
-        userApplicationsViewModel.loadAllApplications()
+    LaunchedEffect(loadMode) {
+        userApplicationsViewModel.loadAllApplications(loadMode)
     }
 
     if (state is UserApplicationsUiState.Idle) {
@@ -120,10 +122,11 @@ fun AllApplicationsListPaged(
     val applications = (state as UserApplicationsUiState.Done).applications
     ApplicationsListPaged(
         applications = applications,
-        arrowView = { ArrowLeft(onArrowClick) },
+        arrowLeftView = { ArrowLeft(onArrowClick) },
+        arrowRightView = null,
         onSettingsClick = onSettingsClick,
         onStatisticsClick = onStatisticsClick,
-        onRefreshClick = { userApplicationsViewModel.loadAllApplications() },
+        onRefreshClick = { userApplicationsViewModel.loadAllApplications(loadMode) },
         onAppClick = {
             userApplicationsViewModel.increaseClickCount(it)
             activityStarter.startApplication(it)
@@ -133,13 +136,45 @@ fun AllApplicationsListPaged(
     )
 }
 
+@Composable
+fun ApplicationsListPagedCenter(
+    loadMode: LoadMode,
+    activityStarter: ActivityStarter = koinInject(),
+    onArrowLeftClick: () -> Unit = { },
+    onArrowRightClick: () -> Unit = { }
+) {
+    val userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(key = "center")
+    val state by userApplicationsViewModel.uiState
+
+    LaunchedEffect(loadMode) {
+        userApplicationsViewModel.loadAllApplications(loadMode)
+    }
+
+    if (state is UserApplicationsUiState.Idle) {
+        return Loading()
+    }
+
+    val applications = (state as UserApplicationsUiState.Done).applications
+    ApplicationsListPaged(
+        applications = applications,
+        arrowLeftView = { ArrowLeft(onArrowLeftClick) },
+        arrowRightView = { ArrowRight(onArrowRightClick) },
+        onAppClick = {
+            userApplicationsViewModel.increaseClickCount(it)
+            activityStarter.startApplication(it)
+        },
+        onAppLongClick = { activityStarter.openSettings(it) },
+        shouldGoBack = { onArrowLeftClick() }
+    )
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ApplicationsListPaged(
     settingsViewModel: SettingsViewModel = koinViewModel(),
     applications: List<Application>,
-    arrowView: @Composable BoxScope.() -> Unit = {},
+    arrowLeftView: @Composable () -> Unit = {},
+    arrowRightView: (@Composable () -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null,
     onStatisticsClick: (() -> Unit)? = null,
     onRefreshClick: (() -> Unit)? = null,
@@ -157,8 +192,8 @@ fun ApplicationsListPaged(
             firstLetters
         }
 
-    LaunchedEffect(Unit) {
-        settingsViewModel.load { _, _, _, pageSizeValue ->
+    LaunchedEffect(arrowLeftView, arrowRightView) {
+        settingsViewModel.load { _, pageSizeValue ->
             pageSize = pageSizeValue
         }
     }
@@ -238,10 +273,11 @@ fun ApplicationsListPaged(
             }
         }
 
-        PageIndicator(pagerState, if (onSettingsClick != null) pagesAlphabet else emptyList())
+        PageIndicator(pagerState, if (onSettingsClick != null || arrowRightView != null) pagesAlphabet else emptyList())
         NavigationArrows(
             pagerState,
-            { arrowView() },
+            arrowLeftView = arrowLeftView,
+            arrowRightView = arrowRightView,
             onSettingsClick,
             onStatisticsClick,
             onRefreshClick
@@ -253,7 +289,8 @@ fun ApplicationsListPaged(
 @Composable
 fun BoxScope.NavigationArrows(
     pagerState: PagerState? = null,
-    arrowView: @Composable () -> Unit,
+    arrowLeftView: @Composable () -> Unit,
+    arrowRightView: (@Composable () -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null,
     onStatisticsClick: (() -> Unit)? = null,
     onRefreshClick: (() -> Unit)? = null,
@@ -290,7 +327,8 @@ fun BoxScope.NavigationArrows(
                 contentDescription = "statistics"
             )
         }
-        arrowView()
+        arrowLeftView()
+        arrowRightView?.invoke()
         if (pagerState != null) {
             Icon(
                 modifier = Modifier

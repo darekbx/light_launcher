@@ -15,4 +15,5 @@ data class Application(
     var scale: Float = 1.0F
     var fontSize: Int = 14
     var isFromHome: Boolean = false
+    var isMy: Boolean = false
 }

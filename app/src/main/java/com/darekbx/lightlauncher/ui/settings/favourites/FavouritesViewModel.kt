@@ -9,6 +9,7 @@ import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.model.FavouriteApplication
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel.Companion.IS_HOME
+import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel.Companion.IS_MY
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

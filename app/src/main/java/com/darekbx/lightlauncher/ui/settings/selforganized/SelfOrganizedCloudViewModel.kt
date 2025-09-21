@@ -12,6 +12,7 @@ import com.darekbx.lightlauncher.ui.getMaxCount
 import com.darekbx.lightlauncher.ui.mapToFontSize
 import com.darekbx.lightlauncher.ui.mapToScale
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel.Companion.IS_HOME
+import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel.Companion.IS_MY
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,6 +63,7 @@ class SelfOrganizedCloudViewModel(
                         scale = mapToScale(fontWeight)
                         fontSize = mapToFontSize(fontWeight)
                         isFromHome = dto.packageName.contains(IS_HOME)
+                        isMy = dto.packageName.contains(IS_MY)
                     }
                 }
                 _uiState.value = SelfOrganizedCloudUiState.Done(userApplications)

@@ -3,15 +3,13 @@ package com.darekbx.lightlauncher.ui.userapplications
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
-import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
 import com.darekbx.lightlauncher.repository.local.dto.ClickCountDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
@@ -24,6 +22,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+enum class LoadMode {
+    ALL, ONLY_HOME, ALL_EXCEPT_HOME
+}
 
 sealed class UserApplicationsUiState {
     class Done(val applications: List<Application>) : UserApplicationsUiState()
@@ -40,6 +42,7 @@ class UserApplicationsViewModel(
 
     companion object {
         const val IS_HOME = "com.darekbx.home"
+        const val IS_MY = "com.darekbx"
     }
 
     val applicationsReceiver = object : BroadcastReceiver() {
@@ -48,7 +51,7 @@ class UserApplicationsViewModel(
             //restoreRemovedApplications(intent)
             when (intent.action) {
                 Intent.ACTION_PACKAGE_ADDED, Intent.ACTION_PACKAGE_REMOVED -> {
-                    loadAllApplications()
+                    loadAllApplications(loadMode = LoadMode.ALL)
                 }
             }
         }
@@ -91,7 +94,8 @@ class UserApplicationsViewModel(
         }
     }
 
-    fun loadAllApplications() {
+    fun loadAllApplications(loadMode: LoadMode) {
+        Log.v("sigma", "Loading all applications, mode: $loadMode")
         viewModelScope.launch {
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
@@ -114,8 +118,16 @@ class UserApplicationsViewModel(
                             scale = mapToScale(fontWeight)
                             fontSize = mapToFontSize(fontWeight)
                             isFromHome = packageName.contains(IS_HOME)
+                            isMy = packageName.contains(IS_MY)
                         }
                         app
+                    }
+                    .filter { app ->
+                        when (loadMode) {
+                            LoadMode.ALL -> true
+                            LoadMode.ONLY_HOME -> (app.isFromHome || app.isMy)
+                            LoadMode.ALL_EXCEPT_HOME -> (!app.isFromHome && !app.isMy)
+                        }
                     }
                     .sortedBy { it.label.lowercase() }
                 _uiState.value = UserApplicationsUiState.Done(applications)
@@ -146,6 +158,7 @@ class UserApplicationsViewModel(
                         scale = mapToScale(fontWeight)
                         fontSize = mapToFontSize(fontWeight)
                         isFromHome = dto.packageName.contains(IS_HOME)
+                        isMy = dto.packageName.contains(IS_MY)
                     }
                 }
                 _uiState.value = UserApplicationsUiState.Done(applications)
