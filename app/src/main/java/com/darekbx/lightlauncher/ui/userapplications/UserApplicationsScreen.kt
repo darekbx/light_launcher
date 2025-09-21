@@ -57,7 +57,10 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -66,7 +69,6 @@ fun UserApplicationsScreen(
     onSettingsClick: () -> Unit,
     onStatisticsClick: () -> Unit,
 ) {
-    val context = LocalContext.current
     var isPaged by remember { mutableStateOf(true) }
     var cycleCount by remember { mutableIntStateOf(-1) }
 
@@ -138,20 +140,31 @@ fun UserApplicationsScreen(
             }
         }
 
-        BatteryHealth(Modifier.align(Alignment.TopEnd), cycleCount)
+        BatteryHealth(Modifier.align(Alignment.TopEnd))
     }
 }
 
 @Preview
 @Composable
-fun BatteryHealth(modifier: Modifier = Modifier, cycleCount: Int = 274) {
+fun BatteryHealth(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var cycleCount by remember { mutableIntStateOf(-1) }
+    var refreshKey by remember { mutableIntStateOf(0) }
+    val formatter = remember { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()) }
+
+    LaunchedEffect(refreshKey) {
+        cycleCount = getBatteryCycles(context)
+    }
+
     Box(
-        modifier = modifier.padding(4.dp),
+        modifier = modifier
+            .padding(4.dp)
+            .clickable { refreshKey++ },
         contentAlignment = Alignment.Center
     ) {
         Text(
             modifier = Modifier.offset((-1).dp, (0.2).dp),
-            text = "${if (cycleCount != -1) cycleCount.toString() else "N/A"} cycles",
+            text = "${if (cycleCount != -1) cycleCount.toString() else "N/A"} cycles (${formatter.format(Date())})",
             style = MaterialTheme.typography.labelSmall,
             letterSpacing = 0.sp,
             fontSize = 9.sp
