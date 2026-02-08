@@ -90,6 +90,7 @@ fun UserApplicationsListPaged(
     val applications = (state as UserApplicationsUiState.Done).applications
     ApplicationsListPaged(
         applications = applications,
+        dontShowAlhpabet = true,
         arrowLeftView = { ArrowLeft(onArrowLeftClick) },
         arrowRightView = { ArrowRight(onArrowRightClick) },
         onAppClick = {
@@ -181,6 +182,7 @@ fun ApplicationsListPagedCenter(
 fun ApplicationsListPaged(
     settingsViewModel: SettingsViewModel = koinViewModel(),
     applications: List<Application>,
+    dontShowAlhpabet: Boolean = false,
     arrowLeftView: @Composable () -> Unit = {},
     arrowRightView: (@Composable () -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null,
@@ -282,7 +284,7 @@ fun ApplicationsListPaged(
             }
         }
 
-        PageIndicator(pagerState, if (onSettingsClick != null || arrowRightView != null) pagesAlphabet else emptyList())
+        PageIndicator(pagerState, if (!dontShowAlhpabet) pagesAlphabet else emptyList())
         NavigationArrows(
             pagerState,
             arrowLeftView = arrowLeftView,
