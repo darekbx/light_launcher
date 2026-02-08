@@ -1,5 +1,6 @@
 package com.darekbx.lightlauncher.ui.userapplications
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -30,10 +31,10 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,7 +74,8 @@ import kotlin.random.Random
 fun UserApplicationsListPaged(
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
     activityStarter: ActivityStarter = koinInject(),
-    onArrowClick: () -> Unit = { }
+    onArrowLeftClick: () -> Unit = { },
+    onArrowRightClick: () -> Unit = { }
 ) {
     val state by userApplicationsViewModel.uiState
 
@@ -88,8 +90,8 @@ fun UserApplicationsListPaged(
     val applications = (state as UserApplicationsUiState.Done).applications
     ApplicationsListPaged(
         applications = applications,
-        arrowLeftView = { ArrowRight(onArrowClick) },
-        arrowRightView = null,
+        arrowLeftView = { ArrowLeft(onArrowLeftClick) },
+        arrowRightView = { ArrowRight(onArrowRightClick) },
         onAppClick = {
             userApplicationsViewModel.increaseClickCount(it)
             activityStarter.startApplication(it)
@@ -123,7 +125,7 @@ fun ApplicationsListPaged(
     ApplicationsListPaged(
         applications = applications,
         arrowLeftView = { ArrowLeft(onArrowClick) },
-        arrowRightView = null,
+        arrowRightView = { ArrowDisabled { } },
         onSettingsClick = onSettingsClick,
         onStatisticsClick = onStatisticsClick,
         onRefreshClick = { userApplicationsViewModel.loadAllApplications(loadMode) },
@@ -132,7 +134,10 @@ fun ApplicationsListPaged(
             activityStarter.startApplication(it)
         },
         onAppLongClick = { activityStarter.openSettings(it) },
-        shouldGoBack = { onArrowClick() }
+        shouldGoBack = {
+
+            Log.v("sigma", "shouldGoBack 3")
+            onArrowClick() }
     )
 }
 
@@ -164,7 +169,10 @@ fun ApplicationsListPagedCenter(
             activityStarter.startApplication(it)
         },
         onAppLongClick = { activityStarter.openSettings(it) },
-        shouldGoBack = { onArrowLeftClick() }
+        shouldGoBack = {
+
+            Log.v("sigma", "shouldGoBack 2")
+            onArrowLeftClick() }
     )
 }
 
@@ -219,6 +227,7 @@ fun ApplicationsListPaged(
                     pagerState.animateScrollToPage(pagerState.currentPage - 1)
                 }
             } else {
+                Log.v("sigma", "shouldGoBack 1")
                 shouldGoBack()
             }
         }
@@ -250,7 +259,7 @@ fun ApplicationsListPaged(
                                 .fillMaxWidth()
                                 .combinedClickable(
                                     interactionSource = remember { MutableInteractionSource() },
-                                    indication = rememberRipple(color = Color.Cyan),
+                                    indication = ripple(color = Color.Cyan),
                                     onClick = { onAppClick(it) },
                                     onLongClick = { onAppLongClick(it) }
                                 )
@@ -421,6 +430,19 @@ fun ArrowLeft(onArrowClick: () -> Unit) {
             .clickable { onArrowClick() }
             .padding(24.dp),
         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+        contentDescription = "back"
+    )
+}
+
+
+@Composable
+fun ArrowDisabled(onArrowClick: () -> Unit) {
+    Icon(
+        modifier = Modifier
+            .clickable { onArrowClick() }
+            .padding(24.dp),
+        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+        tint = Color.White.copy(alpha = 0.33F),
         contentDescription = "back"
     )
 }

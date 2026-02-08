@@ -7,25 +7,29 @@ import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
 import com.darekbx.lightlauncher.repository.local.dto.ClickCountDto
 
 
- suspend fun getMaxCount(
-     clickCountDao: ClickCountDao,
-     savedApps: List<ApplicationDto>,
-     condition: (ApplicationDto, ClickCountDto) -> Boolean
+suspend fun getMaxCount(
+    clickCountDao: ClickCountDao,
+    savedApps: List<ApplicationDto>,
+    condition: (ApplicationDto, ClickCountDto) -> Boolean
 ): Int {
-    val maxCount = clickCountDao.getMaxCount()
-        .takeIf { it.isNotEmpty() } ?: return 0
-    var count = maxCount
-        .fastFilter { clickCount ->
-            savedApps.fastAny { application ->
-                condition(application, clickCount)
+    try {
+        val maxCount = clickCountDao.getMaxCount()
+            .takeIf { it.isNotEmpty() } ?: return 0
+        var count = maxCount
+            .fastFilter { clickCount ->
+                savedApps.fastAny { application ->
+                    condition(application, clickCount)
+                }
             }
+            .maxBy { it.count }
+            .count
+        if (count > 400) {
+            count = (count + 0.7).toInt()
         }
-        .maxBy { it.count }
-        .count
-    if (count > 400) {
-        count = (count + 0.7).toInt()
+        return count
+    } catch (e: Exception) {
+        return 0
     }
-    return count
 }
 
 fun calculateFontWeight(clickCount: Int, maxClicks: Int): Int {

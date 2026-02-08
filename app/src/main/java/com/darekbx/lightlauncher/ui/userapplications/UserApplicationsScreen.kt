@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +52,7 @@ import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.BatteryCycles.getBatteryCycles
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
+import com.darekbx.lightlauncher.ui.mathgame.MathGamePage
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -70,11 +72,6 @@ fun UserApplicationsScreen(
     onStatisticsClick: () -> Unit,
 ) {
     var isPaged by remember { mutableStateOf(true) }
-    var cycleCount by remember { mutableIntStateOf(-1) }
-
-    LaunchedEffect(Unit) {
-        cycleCount = getBatteryCycles(context)
-    }
 
     LaunchedEffect(Unit) {
         settingsViewModel.load { usePages, _ ->
@@ -83,57 +80,61 @@ fun UserApplicationsScreen(
     }
 
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(initialPage = 1, pageCount = { 4 })
 
     Box(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
-            beyondBoundsPageCount = 0,
+            beyondViewportPageCount = 0,
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = false,
             state = pagerState
         ) { page ->
             when (page) {
-                0 -> {
-                   if (isPaged) {
-                        UserApplicationsListPaged(
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
-                        )
-                    } else {
-                        UserApplicationsList(
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
-                        )
-                    }
-                }
+                0 -> MathGamePage { scope.launch { pagerState.animateScrollToPage(1) } }
 
                 1 -> {
                     if (isPaged) {
-                        ApplicationsListPagedCenter(
-                            loadMode = LoadMode.ONLY_HOME,
+                        UserApplicationsListPaged(
                             onArrowLeftClick = { scope.launch { pagerState.animateScrollToPage(0) } },
                             onArrowRightClick = { scope.launch { pagerState.animateScrollToPage(2) } }
                         )
                     } else {
-                        AllApplicationsList(
-                            loadMode = LoadMode.ONLY_HOME,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(0) } }
+                        UserApplicationsList(
+                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(2) } },
+                            onArrowBackClick = { scope.launch { pagerState.animateScrollToPage(0) } }
                         )
                     }
                 }
 
                 2 -> {
-                     if (isPaged) {
+                    if (isPaged) {
+                        ApplicationsListPagedCenter(
+                            loadMode = LoadMode.ONLY_HOME,
+                            onArrowLeftClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+                            onArrowRightClick = { scope.launch { pagerState.animateScrollToPage(3) } }
+                        )
+                    } else {
+                        AllApplicationsList(
+                            loadMode = LoadMode.ONLY_HOME,
+                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                        )
+                    }
+                }
+
+                3 -> {
+                    if (isPaged) {
                         ApplicationsListPaged(
                             loadMode = LoadMode.ALL_EXCEPT_HOME,
                             onSettingsClick = onSettingsClick,
                             onStatisticsClick = onStatisticsClick,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) } }
                         )
                     } else {
                         AllApplicationsList(
                             loadMode = LoadMode.ALL_EXCEPT_HOME,
                             onSettingsClick = onSettingsClick,
                             onStatisticsClick = onStatisticsClick,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(2) } }
                         )
                     }
                 }
@@ -164,7 +165,11 @@ fun BatteryHealth(modifier: Modifier = Modifier) {
     ) {
         Text(
             modifier = Modifier.offset((-1).dp, (0.2).dp),
-            text = "${if (cycleCount != -1) cycleCount.toString() else "N/A"} cycles (${formatter.format(Date())})",
+            text = "${if (cycleCount != -1) cycleCount.toString() else "N/A"} cycles (${
+                formatter.format(
+                    Date()
+                )
+            })",
             style = MaterialTheme.typography.labelSmall,
             letterSpacing = 0.sp,
             fontSize = 9.sp
@@ -257,7 +262,8 @@ fun AllApplicationsList(
 fun UserApplicationsList(
     userApplicationsViewModel: UserApplicationsViewModel = koinViewModel(),
     activityStarter: ActivityStarter = koinInject(),
-    onArrowClick: () -> Unit = { }
+    onArrowClick: () -> Unit = { },
+    onArrowBackClick: () -> Unit = { }
 ) {
     val state by userApplicationsViewModel.uiState
 
@@ -298,14 +304,25 @@ fun UserApplicationsList(
             }
         }
 
-        Icon(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-                .clickable { onArrowClick() },
-            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-            contentDescription = "forward"
-        )
+        Column(
+            modifier = Modifier.align(Alignment.TopEnd),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable { onArrowClick() },
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "forward"
+            )
+            Icon(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable { onArrowBackClick() },
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "back"
+            )
+        }
     }
 }
 
