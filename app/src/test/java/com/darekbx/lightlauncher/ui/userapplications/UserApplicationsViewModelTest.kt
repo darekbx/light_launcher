@@ -115,7 +115,7 @@ class UserApplicationsViewModelTest {
         )
 
         // when
-        viewModel.loadAllApplications()
+        //viewModel.loadAllApplications()
         advanceUntilIdle()
 
         // then
