@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -44,8 +45,6 @@ import com.darekbx.lightlauncher.ui.theme.fontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlin.math.max
-import kotlin.random.Random
 import org.koin.compose.koinInject
 
 private const val KEY_BACKSPACE = "back"
@@ -86,6 +85,7 @@ fun MathGamePage(onBack: () -> Unit = { }) {
 
 @Composable
 fun MathGameView(modifier: Modifier = Modifier) {
+    val equationGenerator = remember { EquationGenerator() }
     val dataStore: DataStore<Preferences> = koinInject()
     val countsFlow = remember {
         dataStore.data.map { preferences ->
@@ -97,14 +97,14 @@ fun MathGameView(modifier: Modifier = Modifier) {
     }
     val mathCounts by countsFlow.collectAsState(initial = MathGameCounters())
     var level by remember { mutableIntStateOf(1) }
-    var equation by remember { mutableStateOf(generateEquation(level)) }
+    var equation by remember { mutableStateOf(equationGenerator.generateEquation(level)) }
     var currentCorrect by remember { mutableIntStateOf(0) }
     var userInput by remember { mutableStateOf("") }
     var wrongAnswer by remember { mutableStateOf<WrongAnswerState?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(level, currentCorrect) {
-        equation = generateEquation(level)
+        equation = equationGenerator.generateEquation(level)
         userInput = ""
     }
 
@@ -140,7 +140,7 @@ fun MathGameView(modifier: Modifier = Modifier) {
 
     fun submitAnswer() {
         val submitted = userInput.toIntOrNull() ?: return
-        if (submitted == equation.answer) {
+        if (submitted == equation.result) {
             currentCorrect += 1
             if (currentCorrect > 0 && currentCorrect % 5 == 0) {
                 level += 1
@@ -149,8 +149,8 @@ fun MathGameView(modifier: Modifier = Modifier) {
             wrongAnswer = null
         } else {
             updateCounters(wrongIncrement = 1)
-            wrongAnswer = WrongAnswerState(equation.expression, equation.answer)
-            equation = generateEquation(level)
+            wrongAnswer = WrongAnswerState(equation.equation, equation.result)
+            equation = equationGenerator.generateEquation(level)
         }
         userInput = ""
     }
@@ -180,30 +180,37 @@ fun MathGameView(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
-                text = equation.expression,
+                text = equation.equation.replace('/', '÷').replace('*', '\u00D7'),
                 textAlign = TextAlign.Center,
+                letterSpacing = 16.sp,
                 style = MaterialTheme.typography.displayMedium,
                 fontFamily = fontFamily,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            wrongAnswer?.let {
-                Text(
-                    text = "${it.equation} = ${it.answer}",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontFamily = fontFamily,
-                    textAlign = TextAlign.Center
-                )
-            } ?: run {
-                Text(
-                    text = if (userInput.isBlank()) "" else userInput,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontFamily = fontFamily,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            wrongAnswer
+                ?.let {
+                    Text(
+                        text = "${
+                            it.equation.replace('/', '÷').replace('*', '\u00D7')
+                        } = ${it.answer}",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.displaySmall,
+                        letterSpacing = 14.sp,
+                        fontSize = 18.sp,
+                        fontFamily = fontFamily,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                ?: run {
+                    Text(
+                        text = if (userInput.isBlank()) "" else userInput,
+                        style = MaterialTheme.typography.displaySmall,
+                        fontFamily = fontFamily,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
         }
 
         Column(
@@ -318,82 +325,9 @@ private fun MathKeyButton(
     }
 }
 
-private fun generateEquation(level: Int): MathGameEquation {
-    val safeLevel = max(1, level)
-    val maxNumber = 10 + max(0, safeLevel - 2) * 5
-    val operationCount = 2
-    val numbers = List(operationCount + 1) {
-        Random.nextInt(1, maxNumber + 1)
-    }
-    val allowedOperations = if (safeLevel == 1) listOf("+", "-") else listOf("+", "-", "\u00D7")
-    val operations = MutableList(operationCount) { allowedOperations.random() }
-
-    if (safeLevel >= 2) {
-        for (index in operations.indices) {
-            val divisor = numbers[index + 1]
-            if (divisor == 0) continue
-            if (numbers[index] % divisor == 0) {
-                operations[index] = "÷"
-                break
-            }
-        }
-    }
-
-    val answer = evaluateExpression(numbers, operations)
-    val expression = buildString {
-        numbers.forEachIndexed { index, number ->
-            append(number)
-            if (index < operations.size) {
-                append(" ${operations[index]} ")
-            }
-        }
-    }
-    return MathGameEquation(expression, answer)
-}
-
-private fun evaluateExpression(numbers: List<Int>, operations: List<String>): Int {
-    val values = numbers.toMutableList()
-    val ops = operations.toMutableList()
-    var index = 0
-    while (index < ops.size) {
-        when (ops[index]) {
-            "\u00D7" -> {
-                val result = values[index] * values[index + 1]
-                values[index] = result
-                values.removeAt(index + 1)
-                ops.removeAt(index)
-            }
-
-            "÷" -> {
-                val result = values[index] / values[index + 1]
-                values[index] = result
-                values.removeAt(index + 1)
-                ops.removeAt(index)
-            }
-
-            else -> index++
-        }
-    }
-    var result = values.first()
-    ops.forEachIndexed { opIndex, op ->
-        val nextValue = values[opIndex + 1]
-        result = when (op) {
-            "+" -> result + nextValue
-            "-" -> result - nextValue
-            else -> result
-        }
-    }
-    return result
-}
-
 private data class MathGameCounters(
     val correct: Int = 0,
     val wrong: Int = 0
-)
-
-private data class MathGameEquation(
-    val expression: String,
-    val answer: Int
 )
 
 private data class WrongAnswerState(
