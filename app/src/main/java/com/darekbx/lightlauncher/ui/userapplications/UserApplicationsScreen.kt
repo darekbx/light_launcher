@@ -44,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -163,26 +164,20 @@ fun BatteryHealth(modifier: Modifier = Modifier) {
         cycleCount = getBatteryCycles(context)
     }
 
-    Box(
-        modifier = modifier
-            .height(10.dp)
+    Text(
+        modifier = Modifier.height(10.dp).padding(end = 4.dp)
             .clickable { refreshKey++ },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            modifier = Modifier
-                .offset((-1).dp, (0.2).dp),
-            text = "${if (cycleCount != -1) cycleCount.toString() else "N/A"} cycles (${
-                formatter.format(
-                    Date()
-                )
-            })",
-            style = MaterialTheme.typography.labelSmall,
-            letterSpacing = 0.sp,
-            lineHeight = 9.sp,
-            fontSize = 9.sp
-        )
-    }
+        text = "${if (cycleCount != -1) cycleCount.toString() else "N/A"} cycles (${
+            formatter.format(
+                Date()
+            )
+        })",
+        style = MaterialTheme.typography.labelSmall,
+        textAlign = TextAlign.End,
+        letterSpacing = 0.sp,
+        lineHeight = 9.sp,
+        fontSize = 9.sp
+    )
 }
 
 
