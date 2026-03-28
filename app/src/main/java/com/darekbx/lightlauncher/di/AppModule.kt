@@ -13,6 +13,9 @@ import com.darekbx.lightlauncher.repository.local.SettingsStore
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
 import com.darekbx.lightlauncher.repository.local.dao.NotificationDao
+import com.darekbx.lightlauncher.repository.remote.stocks.CurrencyService
+import com.darekbx.lightlauncher.repository.remote.stocks.ResponseParser
+import com.darekbx.lightlauncher.repository.remote.stocks.StocksProvider
 import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.ApplicationsProvider
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
@@ -26,10 +29,13 @@ import com.darekbx.lightlauncher.ui.statistics.StatisticsViewModel
 import com.darekbx.lightlauncher.ui.userapplications.NotificationViewModel
 import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel
 import kotlinx.coroutines.Dispatchers
+import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "launcher_preferences")
 
@@ -53,6 +59,16 @@ val appModule = module {
     single { androidContext().dataStore }
     single { SettingsStore(get()) }
     single { ActivityStarter(androidContext()) }
+
+    single {
+        Retrofit.Builder()
+            .baseUrl(CurrencyService.CURRENCIES_BASE_URL)
+            .client(OkHttpClient())
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .build()
+            .create(CurrencyService::class.java)
+    }
+    single { StocksProvider(currencyService = get(), responseParser = ResponseParser()) }
 }
 
 val viewModelModule = module {

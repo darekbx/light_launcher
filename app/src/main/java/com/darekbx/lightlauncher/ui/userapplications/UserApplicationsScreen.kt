@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,7 +23,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -48,12 +48,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.darekbx.lightlauncher.R
+import com.darekbx.lightlauncher.repository.remote.stocks.StocksProvider
 import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.BatteryCycles.getBatteryCycles
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.mathgame.MathGamePage
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
+import com.darekbx.lightlauncher.ui.stocks.StockWidget
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.launch
@@ -141,7 +143,11 @@ fun UserApplicationsScreen(
             }
         }
 
-        BatteryHealth(Modifier.align(Alignment.TopEnd))
+        Column(Modifier.align(Alignment.TopEnd), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            BatteryHealth(Modifier)
+            StockWidget(type = StocksProvider.StockType.GOLD)
+            StockWidget(type = StocksProvider.StockType.ALLEGRO)
+        }
     }
 }
 
@@ -159,12 +165,13 @@ fun BatteryHealth(modifier: Modifier = Modifier) {
 
     Box(
         modifier = modifier
-            .padding(4.dp)
+            .height(10.dp)
             .clickable { refreshKey++ },
         contentAlignment = Alignment.Center
     ) {
         Text(
-            modifier = Modifier.offset((-1).dp, (0.2).dp),
+            modifier = Modifier
+                .offset((-1).dp, (0.2).dp),
             text = "${if (cycleCount != -1) cycleCount.toString() else "N/A"} cycles (${
                 formatter.format(
                     Date()
@@ -172,6 +179,7 @@ fun BatteryHealth(modifier: Modifier = Modifier) {
             })",
             style = MaterialTheme.typography.labelSmall,
             letterSpacing = 0.sp,
+            lineHeight = 9.sp,
             fontSize = 9.sp
         )
     }
