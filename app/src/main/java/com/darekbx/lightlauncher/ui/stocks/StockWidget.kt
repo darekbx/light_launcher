@@ -1,7 +1,9 @@
 package com.darekbx.lightlauncher.ui.stocks
 
-import android.app.KeyguardManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -9,6 +11,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.darekbx.lightlauncher.repository.remote.stocks.StocksProvider
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,19 +40,30 @@ fun StockWidget(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val km = remember { context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager }
-    var wasDeviceLocked by remember { mutableStateOf(km.isDeviceLocked) }
-
     var isLoading by remember { mutableStateOf(false) }
     var previousValue by remember { mutableDoubleStateOf(-1.0) }
     var currentValue by remember { mutableDoubleStateOf(-1.0) }
+    var wasScreenOff by remember { mutableStateOf(false) }
+
+    DisposableEffect(Unit) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == Intent.ACTION_SCREEN_OFF) {
+                    wasScreenOff = true
+                }
+            }
+        }
+
+        context.registerReceiver(receiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
 
     LifecycleResumeEffect(type) {
-        val isLocked = km.isDeviceLocked
-        val shouldFetch = wasDeviceLocked && !isLocked
-
         val job = scope.launch {
-            if (shouldFetch) {
+            if (wasScreenOff) {
                 isLoading = true
 
                 val result = withContext(Dispatchers.IO) {
@@ -63,9 +76,8 @@ fun StockWidget(
                 }
 
                 isLoading = false
+                wasScreenOff = false
             }
-
-            wasDeviceLocked = isLocked
         }
 
         onPauseOrDispose { job.cancel() }
