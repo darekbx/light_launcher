@@ -45,6 +45,8 @@ class UserApplicationsViewModel(
         const val IS_MY = "com.darekbx"
     }
 
+    private var allApplicationsCache: MutableMap<LoadMode, List<Application>> = mutableMapOf()
+
     val applicationsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             checkIfAppShouldBeRemoved(intent)
@@ -94,49 +96,61 @@ class UserApplicationsViewModel(
         }
     }
 
-    fun loadAllApplications(loadMode: LoadMode) {
-        Log.v("sigma", "Loading all applications, mode: $loadMode")
+    fun loadAllApplications(loadMode: LoadMode, forceReload: Boolean = false) {
         viewModelScope.launch {
-            _uiState.value = UserApplicationsUiState.Idle
-            withContext(ioDispatcher) {
-                delay(250)
-                val savedApps = applicationDao.fetch()
-                val maxCount = getMaxCount(clickCountDao, savedApps) { application, clickCount ->
-                    application.activityName != clickCount.activityName
+
+            if (forceReload) {
+                allApplicationsCache.clear()
+            }
+
+            val cached = allApplicationsCache.get(loadMode)
+            if (cached != null) {
+                _uiState.value = UserApplicationsUiState.Done(cached)
+            } else {
+                _uiState.value = UserApplicationsUiState.Idle
+                withContext(ioDispatcher) {
+                    val savedApps = applicationDao.fetch()
+                    val maxCount =
+                        getMaxCount(clickCountDao, savedApps) { application, clickCount ->
+                            application.activityName != clickCount.activityName
+                        }
+                    val installedApps = applicationsProvider.listInstalledApplications()
+                    val applications = installedApps
+                        .filter { installedApp ->
+                            savedApps.none { savedApp ->
+                                savedApp.activityName == installedApp.activityName
+                            }
+                        }
+                        .map { app ->
+                            with(app) {
+                                val clickCount = clickCountDao.get(activityName)?.count ?: 0
+                                fontWeight = calculateFontWeight(clickCount, maxCount)
+                                scale = mapToScale(fontWeight)
+                                fontSize = mapToFontSize(fontWeight)
+                                isFromHome = packageName.contains(IS_HOME)
+                                isMy = packageName.contains(IS_MY)
+                            }
+                            app
+                        }
+                        .filter { app ->
+                            when (loadMode) {
+                                LoadMode.ALL -> true
+                                LoadMode.ONLY_HOME -> (app.isFromHome || app.isMy)
+                                LoadMode.ALL_EXCEPT_HOME -> (!app.isFromHome && !app.isMy)
+                            }
+                        }
+                        .sortedBy { it.label.lowercase() }
+
+                    allApplicationsCache[loadMode] = applications
+                    _uiState.value = UserApplicationsUiState.Done(applications)
                 }
-                val installedApps = applicationsProvider.listInstalledApplications()
-                val applications = installedApps
-                    .filter { installedApp ->
-                        savedApps.none { savedApp ->
-                            savedApp.activityName == installedApp.activityName
-                        }
-                    }
-                    .map { app ->
-                        with(app) {
-                            val clickCount = clickCountDao.get(activityName)?.count ?: 0
-                            fontWeight = calculateFontWeight(clickCount, maxCount)
-                            scale = mapToScale(fontWeight)
-                            fontSize = mapToFontSize(fontWeight)
-                            isFromHome = packageName.contains(IS_HOME)
-                            isMy = packageName.contains(IS_MY)
-                        }
-                        app
-                    }
-                    .filter { app ->
-                        when (loadMode) {
-                            LoadMode.ALL -> true
-                            LoadMode.ONLY_HOME -> (app.isFromHome || app.isMy)
-                            LoadMode.ALL_EXCEPT_HOME -> (!app.isFromHome && !app.isMy)
-                        }
-                    }
-                    .sortedBy { it.label.lowercase() }
-                _uiState.value = UserApplicationsUiState.Done(applications)
             }
         }
     }
 
     fun loadApplications() {
         viewModelScope.launch {
+            val s = System.currentTimeMillis()
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 val savedApps = applicationDao.fetch()
@@ -161,6 +175,7 @@ class UserApplicationsViewModel(
                         isMy = dto.packageName.contains(IS_MY)
                     }
                 }
+                Log.v("sigma", "loadApplications done in ${System.currentTimeMillis() - s}ms")
                 _uiState.value = UserApplicationsUiState.Done(applications)
             }
         }

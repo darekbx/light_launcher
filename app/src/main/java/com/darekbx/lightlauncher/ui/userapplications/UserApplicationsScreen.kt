@@ -146,8 +146,8 @@ fun UserApplicationsScreen(
 
         Column(Modifier.align(Alignment.TopEnd), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BatteryHealth(Modifier)
-            StockWidget(type = StocksProvider.StockType.GOLD)
-            StockWidget(type = StocksProvider.StockType.ALLEGRO)
+            //StockWidget(type = StocksProvider.StockType.GOLD)
+            //StockWidget(type = StocksProvider.StockType.ALLEGRO)
         }
     }
 }

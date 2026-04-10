@@ -129,16 +129,13 @@ fun ApplicationsListPaged(
         arrowRightView = { ArrowDisabled { } },
         onSettingsClick = onSettingsClick,
         onStatisticsClick = onStatisticsClick,
-        onRefreshClick = { userApplicationsViewModel.loadAllApplications(loadMode) },
+        onRefreshClick = { userApplicationsViewModel.loadAllApplications(loadMode, forceReload = true) },
         onAppClick = {
             userApplicationsViewModel.increaseClickCount(it)
             activityStarter.startApplication(it)
         },
         onAppLongClick = { activityStarter.openSettings(it) },
-        shouldGoBack = {
-
-            Log.v("sigma", "shouldGoBack 3")
-            onArrowClick() }
+        shouldGoBack = { onArrowClick() }
     )
 }
 
