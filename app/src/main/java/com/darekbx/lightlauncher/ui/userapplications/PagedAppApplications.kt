@@ -167,10 +167,7 @@ fun ApplicationsListPagedCenter(
             activityStarter.startApplication(it)
         },
         onAppLongClick = { activityStarter.openSettings(it) },
-        shouldGoBack = {
-
-            Log.v("sigma", "shouldGoBack 2")
-            onArrowLeftClick() }
+        shouldGoBack = { onArrowLeftClick() }
     )
 }
 
@@ -226,7 +223,6 @@ fun ApplicationsListPaged(
                     pagerState.animateScrollToPage(pagerState.currentPage - 1)
                 }
             } else {
-                Log.v("sigma", "shouldGoBack 1")
                 shouldGoBack()
             }
         }

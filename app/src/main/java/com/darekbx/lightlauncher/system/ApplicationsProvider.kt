@@ -17,7 +17,7 @@ class ApplicationsProvider(
                     getActivityName(it),
                     getPackageName(it),
                     loadAppLabel(it),
-                    loadAppIcon(it),
+                    icon = null //loadAppIcon(it),
                 )
             }
     }

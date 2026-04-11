@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,14 +48,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.darekbx.lightlauncher.R
-import com.darekbx.lightlauncher.repository.remote.stocks.StocksProvider
 import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.BatteryCycles.getBatteryCycles
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.mathgame.MathGamePage
 import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
-import com.darekbx.lightlauncher.ui.stocks.StockWidget
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.launch
@@ -93,18 +90,18 @@ fun UserApplicationsScreen(
             state = pagerState
         ) { page ->
             when (page) {
-                0 -> MathGamePage { scope.launch { pagerState.animateScrollToPage(1) } }
+                0 -> MathGamePage { scope.launch { pagerState.scrollToPage(1) } }
 
                 1 -> {
                     if (isPaged) {
                         UserApplicationsListPaged(
-                            onArrowLeftClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                            onArrowRightClick = { scope.launch { pagerState.animateScrollToPage(2) } }
+                            onArrowLeftClick = { scope.launch { pagerState.scrollToPage(0) } },
+                            onArrowRightClick = { scope.launch { pagerState.scrollToPage(2) } }
                         )
                     } else {
                         UserApplicationsList(
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(2) } },
-                            onArrowBackClick = { scope.launch { pagerState.animateScrollToPage(0) } }
+                            onArrowClick = { scope.launch { pagerState.scrollToPage(2) } },
+                            onArrowBackClick = { scope.launch { pagerState.scrollToPage(0) } }
                         )
                     }
                 }
@@ -113,13 +110,13 @@ fun UserApplicationsScreen(
                     if (isPaged) {
                         ApplicationsListPagedCenter(
                             loadMode = LoadMode.ONLY_HOME,
-                            onArrowLeftClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                            onArrowRightClick = { scope.launch { pagerState.animateScrollToPage(3) } }
+                            onArrowLeftClick = { scope.launch { pagerState.scrollToPage(1) } },
+                            onArrowRightClick = { scope.launch { pagerState.scrollToPage(3) } }
                         )
                     } else {
                         AllApplicationsList(
                             loadMode = LoadMode.ONLY_HOME,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(1) } }
+                            onArrowClick = { scope.launch { pagerState.scrollToPage(1) } }
                         )
                     }
                 }
@@ -130,14 +127,14 @@ fun UserApplicationsScreen(
                             loadMode = LoadMode.ALL_EXCEPT_HOME,
                             onSettingsClick = onSettingsClick,
                             onStatisticsClick = onStatisticsClick,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) } }
+                            onArrowClick = { scope.launch { pagerState.scrollToPage(pagerState.currentPage - 1) } }
                         )
                     } else {
                         AllApplicationsList(
                             loadMode = LoadMode.ALL_EXCEPT_HOME,
                             onSettingsClick = onSettingsClick,
                             onStatisticsClick = onStatisticsClick,
-                            onArrowClick = { scope.launch { pagerState.animateScrollToPage(2) } }
+                            onArrowClick = { scope.launch { pagerState.scrollToPage(2) } }
                         )
                     }
                 }

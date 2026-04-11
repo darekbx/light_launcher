@@ -3,7 +3,6 @@ package com.darekbx.lightlauncher.ui.userapplications
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -14,12 +13,7 @@ import com.darekbx.lightlauncher.repository.local.dto.ClickCountDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
 import com.darekbx.lightlauncher.system.model.Application
-import com.darekbx.lightlauncher.ui.calculateFontWeight
-import com.darekbx.lightlauncher.ui.getMaxCount
-import com.darekbx.lightlauncher.ui.mapToFontSize
-import com.darekbx.lightlauncher.ui.mapToScale
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -98,7 +92,6 @@ class UserApplicationsViewModel(
 
     fun loadAllApplications(loadMode: LoadMode, forceReload: Boolean = false) {
         viewModelScope.launch {
-
             if (forceReload) {
                 allApplicationsCache.clear()
             }
@@ -110,10 +103,6 @@ class UserApplicationsViewModel(
                 _uiState.value = UserApplicationsUiState.Idle
                 withContext(ioDispatcher) {
                     val savedApps = applicationDao.fetch()
-                    val maxCount =
-                        getMaxCount(clickCountDao, savedApps) { application, clickCount ->
-                            application.activityName != clickCount.activityName
-                        }
                     val installedApps = applicationsProvider.listInstalledApplications()
                     val applications = installedApps
                         .filter { installedApp ->
@@ -123,10 +112,6 @@ class UserApplicationsViewModel(
                         }
                         .map { app ->
                             with(app) {
-                                val clickCount = clickCountDao.get(activityName)?.count ?: 0
-                                fontWeight = calculateFontWeight(clickCount, maxCount)
-                                scale = mapToScale(fontWeight)
-                                fontSize = mapToFontSize(fontWeight)
                                 isFromHome = packageName.contains(IS_HOME)
                                 isMy = packageName.contains(IS_MY)
                             }
@@ -150,32 +135,23 @@ class UserApplicationsViewModel(
 
     fun loadApplications() {
         viewModelScope.launch {
-            val s = System.currentTimeMillis()
             _uiState.value = UserApplicationsUiState.Idle
             withContext(ioDispatcher) {
                 val savedApps = applicationDao.fetch()
-                val maxCount = getMaxCount(clickCountDao, savedApps) { application, clickCount ->
-                    application.activityName == clickCount.activityName
-                }
                 val applications = savedApps.map { dto ->
-                    val clickCount = clickCountDao.get(dto.activityName)?.count ?: 0
                     Application(
                         activityName = dto.activityName,
                         packageName = dto.packageName,
                         label = dto.label,
-                        icon = packageManager.getApplicationIcon(dto.packageName),
+                        icon = null,
                         order = dto.order,
                         x = dto.x,
                         y = dto.y,
                     ).apply {
-                        fontWeight = calculateFontWeight(clickCount, maxCount)
-                        scale = mapToScale(fontWeight)
-                        fontSize = mapToFontSize(fontWeight)
                         isFromHome = dto.packageName.contains(IS_HOME)
                         isMy = dto.packageName.contains(IS_MY)
                     }
                 }
-                Log.v("sigma", "loadApplications done in ${System.currentTimeMillis() - s}ms")
                 _uiState.value = UserApplicationsUiState.Done(applications)
             }
         }
