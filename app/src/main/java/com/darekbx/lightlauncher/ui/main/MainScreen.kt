@@ -1,6 +1,5 @@
 package com.darekbx.lightlauncher.ui.main
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -94,7 +93,7 @@ fun MainScreen(
 @Composable
 fun LauncherPages(
     pages: List<List<Application>>,
-    pageSize: Int = 4,
+    pageSize: Int = 8,
     onRefresh: () -> Unit,
     onOpenSettings: () -> Unit,
     onAppClick: (Application) -> Unit,
@@ -126,13 +125,18 @@ fun LauncherPages(
             })
         } else {
 
-            Log.v("sigma", "page: ${horizontalPage}")
             val applicationsChunks = pages[horizontalPage - 1].chunked(pageSize)
             val verticalPagerState = rememberPagerState(pageCount = { applicationsChunks.size })
-            val pagesAlphabet = remember { extractAlphabet(applicationsChunks) }
+            val pagesAlphabet = remember {
+                if (horizontalPage == 1) {
+                    extractAlphabetUnSorted(applicationsChunks)
+                } else {
+                    extractAlphabet(applicationsChunks)
+                }
+            }
 
-            BackHandler(enabled = verticalPagerState.currentPage > 0) {
-                Log.v("sigma", "Back2")
+            val backEnabledVert by remember { derivedStateOf { verticalPagerState.currentPage > 0 } }
+            BackHandler(enabled = backEnabledVert) {
                 if (verticalPagerState.canScrollBackward) {
                     scope.launch {
                         verticalPagerState.animateScrollToPage(verticalPagerState.currentPage - 1)
@@ -171,6 +175,12 @@ private fun extractAlphabet(applicationsChunks: List<List<Application>>): List<L
     applicationsChunks
         .mapIndexed { _, chunk ->
             chunk.map { it.label.first().uppercaseChar() }.distinct().sorted()
+        }
+
+private fun extractAlphabetUnSorted(applicationsChunks: List<List<Application>>): List<List<Char>> =
+    applicationsChunks
+        .mapIndexed { _, chunk ->
+            chunk.map { it.label.first().uppercaseChar() }.distinct()
         }
 
 @Composable
