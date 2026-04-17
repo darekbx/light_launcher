@@ -1,13 +1,13 @@
 package com.darekbx.lightlauncher.ui.settings.order
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,11 +27,9 @@ import com.darekbx.lightlauncher.system.model.ApplicationOrder
 import com.darekbx.lightlauncher.ui.Loading
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
 import com.darekbx.lightlauncher.ui.theme.fontFamily
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
 import org.koin.androidx.compose.koinViewModel
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun ApplicationsOrderScreen(
@@ -59,7 +57,6 @@ fun ApplicationsOrderList(
 ) {
     Column(
         modifier = Modifier
-            //.background(MaterialTheme.colorScheme.background)
             .fillMaxWidth()
             .padding(32.dp)
     ) {
@@ -70,26 +67,23 @@ fun ApplicationsOrderList(
             color = MaterialTheme.colorScheme.onBackground,
             fontFamily = fontFamily
         )
+
         val data = remember { mutableStateOf(applications) }
-        val state = rememberReorderableLazyListState(
-            onDragEnd = { fromIndex, toIndex ->
-                val order = data.value.mapIndexed { index, application ->
-                    application.copy(order = index)
-                }
-                setOrder(order)
-            },
-            onMove = { from, to ->
-                data.value = data.value.toMutableList().apply {
-                    val fromItem = removeAt(from.index)
-                    add(to.index, fromItem)
-                }
+        val listState = rememberLazyListState()
+        val state = rememberReorderableLazyListState(listState) { from, to ->
+            data.value = data.value.toMutableList().apply {
+                val fromItem = removeAt(from.index)
+                add(to.index, fromItem)
             }
-        )
+            val order = data.value.mapIndexed { index, application ->
+                application.copy(order = index)
+            }
+            setOrder(order)
+        }
+
         LazyColumn(
-            state = state.listState,
+            state = listState,
             modifier = Modifier
-                .reorderable(state)
-                .detectReorderAfterLongPress(state)
         ) {
             items(data.value, { it }) { item ->
                 ReorderableItem(state, key = item) { isDragging ->
@@ -97,7 +91,9 @@ fun ApplicationsOrderList(
                     ApplicationOrderView(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(elevation.value), item
+                            .shadow(elevation.value)
+                            .draggableHandle(),
+                        application = item
                     )
                 }
             }

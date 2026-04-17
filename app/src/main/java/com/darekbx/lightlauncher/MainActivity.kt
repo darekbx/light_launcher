@@ -1,8 +1,6 @@
 package com.darekbx.lightlauncher
 
 import android.app.Activity
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -21,10 +18,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.darekbx.lightlauncher.ui.theme.LightLauncherTheme
-import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel
 import com.darekbx.shoppinglist.navigation.AppNavHost
 import com.darekbx.shoppinglist.navigation.UserApplicationsDestination
-import org.koin.androidx.compose.koinViewModel
 
 /**
  * Light phone launcher
@@ -37,27 +32,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             LauncherContent()
         }
     }
 
     @Composable
-    private fun LauncherContent(
-        userApplicationsViewModel: UserApplicationsViewModel = koinViewModel()
-    ) {
-        DisposableEffect(Unit) {
-            registerReceiver(userApplicationsViewModel.applicationsReceiver, IntentFilter().apply {
-                addAction(Intent.ACTION_PACKAGE_ADDED)
-                addAction(Intent.ACTION_PACKAGE_REMOVED)
-                addDataScheme("package")
-            })
-            onDispose {
-                unregisterReceiver(userApplicationsViewModel.applicationsReceiver)
-            }
-        }
-
+    private fun LauncherContent() {
         LightLauncherTheme {
             val navController = rememberNavController()
 

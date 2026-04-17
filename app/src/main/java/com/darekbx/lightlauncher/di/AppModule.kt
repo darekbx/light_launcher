@@ -6,36 +6,29 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import com.darekbx.lightlauncher.domain.FetchApplicationsDataUseCase
 import com.darekbx.lightlauncher.repository.local.AppDatabase
 import com.darekbx.lightlauncher.repository.local.AppDatabase.Companion.MIGRATION_1_2
 import com.darekbx.lightlauncher.repository.local.AppDatabase.Companion.MIGRATION_2_3
-import com.darekbx.lightlauncher.repository.local.SettingsStore
+import com.darekbx.lightlauncher.repository.local.AppDatabase.Companion.MIGRATION_3_4
+import com.darekbx.lightlauncher.repository.local.AppDatabase.Companion.MIGRATION_4_5
+import com.darekbx.lightlauncher.repository.local.dao.ApplicationCacheDao
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dao.ClickCountDao
-import com.darekbx.lightlauncher.repository.local.dao.NotificationDao
-import com.darekbx.lightlauncher.repository.remote.stocks.CurrencyService
-import com.darekbx.lightlauncher.repository.remote.stocks.ResponseParser
-import com.darekbx.lightlauncher.repository.remote.stocks.StocksProvider
 import com.darekbx.lightlauncher.system.ActivityStarter
 import com.darekbx.lightlauncher.system.ApplicationsProvider
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.BasePackageManager
 import com.darekbx.lightlauncher.system.PackageManagerWrapper
-import com.darekbx.lightlauncher.ui.settings.SettingsViewModel
+import com.darekbx.lightlauncher.ui.main.MainScreenViewModel
 import com.darekbx.lightlauncher.ui.settings.favourites.FavouritesViewModel
 import com.darekbx.lightlauncher.ui.settings.order.OrderViewModel
-import com.darekbx.lightlauncher.ui.settings.selforganized.SelfOrganizedCloudViewModel
 import com.darekbx.lightlauncher.ui.statistics.StatisticsViewModel
-import com.darekbx.lightlauncher.ui.userapplications.NotificationViewModel
-import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel
 import kotlinx.coroutines.Dispatchers
-import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import retrofit2.Retrofit
-import retrofit2.converter.scalars.ScalarsConverterFactory
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "launcher_preferences")
 
@@ -45,11 +38,13 @@ val databaseModule = module {
             .databaseBuilder(get<Application>(), AppDatabase::class.java, AppDatabase.DB_NAME)
             .addMigrations(MIGRATION_1_2)
             .addMigrations(MIGRATION_2_3)
+            .addMigrations(MIGRATION_3_4)
+            .addMigrations(MIGRATION_4_5)
             .build()
     }
     single<ApplicationDao> { get<AppDatabase>().applicationDao() }
     single<ClickCountDao> { get<AppDatabase>().clickCountDao() }
-    single<NotificationDao> { get<AppDatabase>().notificationDao() }
+    single<ApplicationCacheDao> { get<AppDatabase>().applicationCacheDao() }
 }
 
 val appModule = module {
@@ -57,21 +52,15 @@ val appModule = module {
     single<BasePackageManager> { PackageManagerWrapper(androidContext().packageManager) }
     single<BaseApplicationsProvider> { ApplicationsProvider(get()) }
     single { androidContext().dataStore }
-    single { SettingsStore(get()) }
     single { ActivityStarter(androidContext()) }
 
-    single {
-        Retrofit.Builder()
-            .baseUrl(CurrencyService.CURRENCIES_BASE_URL)
-            .client(OkHttpClient())
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .build()
-            .create(CurrencyService::class.java)
-    }
-    single { StocksProvider(currencyService = get(), responseParser = ResponseParser()) }
+    single { FetchApplicationsDataUseCase(get(), get(), get()) }
 }
 
 val viewModelModule = module {
+    viewModel {
+        MainScreenViewModel(get(), get())
+    }
     viewModel {
         FavouritesViewModel(
             get<BaseApplicationsProvider>(),
@@ -86,28 +75,6 @@ val viewModelModule = module {
         )
     }
     viewModel {
-        SelfOrganizedCloudViewModel(
-            get(),
-            get(),
-            get(named("io_dispatcher"))
-        )
-    }
-    viewModel {
-        UserApplicationsViewModel(
-            get(),
-            get(),
-            get(),
-            get(),
-            get(named("io_dispatcher"))
-        )
-    }
-    viewModel {
         StatisticsViewModel(get(), get())
-    }
-    viewModel {
-        NotificationViewModel(get())
-    }
-    viewModel {
-        SettingsViewModel(get())
     }
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Light Launcher</string>
+    <string name="app_name_test">Test Launcher</string>
 </resources>

@@ -4,12 +4,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.darekbx.lightlauncher.domain.FetchApplicationsDataUseCase.Companion.IS_HOME
 import com.darekbx.lightlauncher.repository.local.dao.ApplicationDao
 import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.model.FavouriteApplication
-import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel.Companion.IS_HOME
-import com.darekbx.lightlauncher.ui.userapplications.UserApplicationsViewModel.Companion.IS_MY
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,7 +49,7 @@ class FavouritesViewModel(
         viewModelScope.launch {
             _uiState.value = FavouritesUiState.Idle
             withContext(ioDispatcher) {
-                val installedApps = applicationsProvider.listInstalledApplications()
+                val installedApps = applicationsProvider.listPackageManagerApps()
                 val savedApps = applicationDao.fetch()
                 val favouriteApplication = installedApps.map { installedApp ->
                     val savedApp = savedApps.find { it.activityName == installedApp.activityName }

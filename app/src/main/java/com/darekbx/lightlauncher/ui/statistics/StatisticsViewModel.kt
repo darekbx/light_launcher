@@ -12,7 +12,7 @@ class StatisticsViewModel(
 ) : ViewModel() {
 
     fun getClickCount() = flow {
-        val applications = applicationsProvider.listInstalledApplications()
+        val applications = applicationsProvider.listPackageManagerApps()
         val clickCounts = clickCountDao.fetch()
         emit(clickCounts.mapNotNull { clickCountDto ->
             applications

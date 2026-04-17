@@ -2,22 +2,21 @@ package com.darekbx.lightlauncher.system
 
 import android.content.Intent
 import android.content.pm.ResolveInfo
-import com.darekbx.lightlauncher.system.model.Application
+import com.darekbx.lightlauncher.system.model.PackageManagerApplication
 
 class ApplicationsProvider(
     private val packageManager: BasePackageManager
 ) : BaseApplicationsProvider {
 
-    override fun listInstalledApplications(): List<Application> {
+    override fun listPackageManagerApps(): List<PackageManagerApplication> {
         val intent = launcherIntent()
         return packageManager
             .queryIntentActivities(intent, flags = 0)
             .map {
-                Application(
+                PackageManagerApplication(
                     getActivityName(it),
                     getPackageName(it),
-                    loadAppLabel(it),
-                    loadAppIcon(it),
+                    loadAppLabel(it)
                 )
             }
     }
@@ -27,9 +26,6 @@ class ApplicationsProvider(
 
     fun getActivityName(resolveInfo: ResolveInfo): String =
         resolveInfo.activityInfo.name
-
-    fun loadAppIcon(resolveInfo: ResolveInfo) =
-        packageManager.getApplicationIcon(resolveInfo)
 
     fun loadAppLabel(resolveInfo: ResolveInfo) =
         packageManager.getApplicationLabel(resolveInfo)

@@ -1,19 +1,22 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kspAndroid)
     alias(libs.plugins.gitVersionGradle)
+    alias(libs.plugins.jetbrains.kotlin.compose)
     id("kotlin-parcelize")
 }
 
 android {
     namespace = "com.darekbx.lightlauncher"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.darekbx.lightlauncher"
         minSdk = 33
-        targetSdk = 35
+        targetSdk = 36
         versionName = androidGitVersion.name()
         versionCode = 1
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -45,20 +48,20 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
     }
 }
 
@@ -82,16 +85,10 @@ dependencies {
 
     implementation(libs.accompanist.drawablepainter)
 
-    implementation(libs.compose.reordeable)
+    implementation(libs.compose.reorderable)
 
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
-
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
-    implementation(libs.retrofit.scalars)
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

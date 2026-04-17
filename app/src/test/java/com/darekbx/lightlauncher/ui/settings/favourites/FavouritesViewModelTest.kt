@@ -5,6 +5,7 @@ import com.darekbx.lightlauncher.repository.local.dto.ApplicationDto
 import com.darekbx.lightlauncher.system.BaseApplicationsProvider
 import com.darekbx.lightlauncher.system.model.Application
 import com.darekbx.lightlauncher.system.model.FavouriteApplication
+import com.darekbx.lightlauncher.system.model.PackageManagerApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -50,7 +51,7 @@ class FavouritesViewModelTest {
     fun `setFavourite adds favourite when isFavourite is true`() = runTest {
         // given
         val packageName = "com.test.app"
-        every { applicationsProvider.listInstalledApplications() } returns emptyList()
+        every { applicationsProvider.listPackageManagerApps() } returns emptyList()
         coEvery { applicationDao.fetch() } returns emptyList()
 
         val slot = slot<ApplicationDto>()
@@ -67,7 +68,7 @@ class FavouritesViewModelTest {
     fun `setFavourite removes favourite when isFavourite is false`() = runTest {
         // given
         val packageName = "com.test.app"
-        every { applicationsProvider.listInstalledApplications() } returns emptyList()
+        every { applicationsProvider.listPackageManagerApps() } returns emptyList()
         coEvery { applicationDao.fetch() } returns emptyList()
         coEvery { applicationDao.delete(any()) } returns Unit
 
@@ -81,9 +82,9 @@ class FavouritesViewModelTest {
     @Test
     fun `loadFavouriteApplications fetches mapped item`() = runTest {
         // given
-        coEvery { applicationsProvider.listInstalledApplications() } returns listOf(
-            Application("activity1", "com.test.app1", "Test app1", mockk(), 0),
-            Application("activity2", "com.test.app2", "Test app2", mockk(), 0)
+        coEvery { applicationsProvider.listPackageManagerApps() } returns listOf(
+            PackageManagerApplication("activity1", "com.test.app1", "Test app1"),
+            PackageManagerApplication("activity2", "com.test.app2", "Test app2")
         )
         coEvery { applicationDao.fetch() } returns listOf(
             ApplicationDto(1L, "activity1", "com.test.app1"),
