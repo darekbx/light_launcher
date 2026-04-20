@@ -1,6 +1,5 @@
 package com.darekbx.lightlauncher.ui.mathgame
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +56,6 @@ private val MATH_WRONG_COUNT_KEY = intPreferencesKey("mathgame_wrong_count")
 
 @Composable
 fun MathGamePage(onBack: () -> Unit = { }) {
-    BackHandler { onBack() }
     Box(modifier = Modifier.fillMaxSize()) {
         MathGameView(modifier = Modifier.fillMaxSize())
         Column(
