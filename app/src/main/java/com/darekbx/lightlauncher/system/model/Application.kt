@@ -14,6 +14,8 @@ data class Application(
 ) {
     val isHomeOrMy = isFromHome || isMy
 
+    var isBari = false
+
     companion object {
 
         fun ApplicationCacheDto.toApplicationCache() =

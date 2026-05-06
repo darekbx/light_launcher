@@ -100,7 +100,7 @@ fun LauncherPages(
     onAppLongClick: (Application) -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val horizontalPagerState = rememberPagerState(initialPage = 1, pageCount = { 4 })
+    val horizontalPagerState = rememberPagerState(initialPage = 1, pageCount = { 5 })
     val backEnabled by remember { derivedStateOf { horizontalPagerState.currentPage > 1 } }
 
     BackHandler(enabled = backEnabled) {
@@ -291,6 +291,7 @@ fun UserApplicationView(
     modifier: Modifier = Modifier,
     application: Application
 ) {
+    val color = if (application.isBari) Color(0xFFDD99AA) else MaterialTheme.colorScheme.onBackground
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -304,7 +305,7 @@ fun UserApplicationView(
             modifier = Modifier,
             text = application.label,
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = color,
             fontWeight = weight,
             letterSpacing = 2.sp,
             fontSize = 22.sp
