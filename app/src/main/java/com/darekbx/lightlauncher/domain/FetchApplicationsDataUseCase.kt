@@ -45,6 +45,8 @@ class FetchApplicationsDataUseCase(
             "com.wizzair.WizzAirApp",
             "com.lynxspa.prontotreno",
             "com.whatsapp",
+            "net.pluservice.muvt",
+            "com.tranzmate",
         )
         val pageFour = otherApplications.map { it.toApplicationCacheDto(4) }
 
