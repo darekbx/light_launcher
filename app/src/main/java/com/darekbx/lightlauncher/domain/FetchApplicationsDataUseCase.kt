@@ -40,18 +40,7 @@ class FetchApplicationsDataUseCase(
         val pageTwo = otherHomeApplications.map { it.toApplicationCacheDto(2) }
         val pageThree = otherApplications.map { it.toApplicationCacheDto(3) }
 
-
-        val bariApps = listOf(
-            "com.wizzair.WizzAirApp",
-            "com.lynxspa.prontotreno",
-            "com.whatsapp",
-            "net.pluservice.muvt",
-            "com.tranzmate",
-        )
-        val pageFour = otherApplications.map { it.toApplicationCacheDto(4) }
-
-
-        val allPages = pageOne + pageTwo + pageThree + pageFour
+        val allPages = pageOne + pageTwo + pageThree
 
         // 4c. Save cache
         applicationCacheDao.addAll(allPages)
@@ -59,11 +48,7 @@ class FetchApplicationsDataUseCase(
         return listOf(
             favouriteApplications,
             otherHomeApplications,
-            otherApplications,
-
             otherApplications
-                .filter { bariApps.contains(it.packageName)  }
-                .map { it.also { it.isBari = true } }
         )
     }
 
