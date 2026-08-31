@@ -1,5 +1,7 @@
 package com.darekbx.lightlauncher.ui.main
 
+import android.app.KeyguardManager
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,6 +66,9 @@ fun MainScreen(
     onOpenSettings: () -> Unit
 ) {
     val applicationsData by mainScreenViewModel.applicationsData
+    val context = LocalContext.current
+    val keyguardManager =
+        remember { context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager }
 
     LaunchedEffect(Unit) {
         mainScreenViewModel.loadApplications(forceRefresh = false)
@@ -76,10 +81,16 @@ fun MainScreen(
                 onRefresh = { mainScreenViewModel.loadApplications(forceRefresh = true) },
                 onOpenSettings = onOpenSettings,
                 onAppClick = {
-                    mainScreenViewModel.increaseClickCount(it)
-                    activityStarter.startApplication(it)
+                    if (!keyguardManager.isDeviceLocked) {
+                        mainScreenViewModel.increaseClickCount(it)
+                        activityStarter.startApplication(it)
+                    }
                 },
-                onAppLongClick = { activityStarter.openSettings(it) },
+                onAppLongClick = {
+                    if (!keyguardManager.isDeviceLocked) {
+                        activityStarter.openSettings(it)
+                    }
+                },
             )
         }
         BatteryHealth(
