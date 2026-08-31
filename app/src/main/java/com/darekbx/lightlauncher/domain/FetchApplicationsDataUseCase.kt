@@ -39,6 +39,7 @@ class FetchApplicationsDataUseCase(
         val pageOne = favouriteApplications.map { it.toApplicationCacheDto(1) }
         val pageTwo = otherHomeApplications.map { it.toApplicationCacheDto(2) }
         val pageThree = otherApplications.map { it.toApplicationCacheDto(3) }
+
         val allPages = pageOne + pageTwo + pageThree
 
         // 4c. Save cache

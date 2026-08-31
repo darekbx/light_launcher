@@ -302,6 +302,7 @@ fun UserApplicationView(
     modifier: Modifier = Modifier,
     application: Application
 ) {
+    val color = MaterialTheme.colorScheme.onBackground
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -315,7 +316,7 @@ fun UserApplicationView(
             modifier = Modifier,
             text = application.label,
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = color,
             fontWeight = weight,
             letterSpacing = 2.sp,
             fontSize = 22.sp
